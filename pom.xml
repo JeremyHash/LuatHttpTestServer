@@ -20,13 +20,22 @@
         <version>2.3.0.RELEASE</version>
     </parent>
 
-    <!-- spring-boot的web启动的jar包 -->
     <dependencies>
+        <!-- spring-boot的web启动的jar包 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
+        <!--lombok-->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.12</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
+
 
     <!--maven的插件-->
     <build>

@@ -10,16 +10,20 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Objects;
 
 @RestController
-public class FileController {
+public class UploadFileController {
 
+    /*
+     * 文件上传Controller
+     * */
     @PostMapping("/uploadFile")
     @ResponseBody
     public String handleFileUpload(@RequestParam("file") MultipartFile file) {
         if (!file.isEmpty()) {
             try {
-                BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(file.getOriginalFilename())));
+                BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(Objects.requireNonNull(file.getOriginalFilename()))));
                 out.write(file.getBytes());
                 out.flush();
                 out.close();
@@ -31,7 +35,7 @@ public class FileController {
             return "上传成功";
 
         } else {
-            return "上传失败，因为文件是空的.";
+            return "上传失败，因为文件是空的";
         }
     }
 }
