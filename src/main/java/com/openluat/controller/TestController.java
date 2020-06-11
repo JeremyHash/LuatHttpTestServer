@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class TestController {
 
-    @PostMapping(path = "/")
+    @PostMapping(path = "/getContentLength")
     public int postTest(@RequestBody String data) {
         return data.length();
     }

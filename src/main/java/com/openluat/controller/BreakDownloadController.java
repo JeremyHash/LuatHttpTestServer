@@ -1,6 +1,7 @@
 package com.openluat.controller;
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -16,9 +17,8 @@ import java.io.OutputStream;
 import java.io.RandomAccessFile;
 
 @Controller
+@Slf4j
 public class BreakDownloadController {
-
-    private static final Logger log = LoggerFactory.getLogger(BreakDownloadController.class);
 
     @RequestMapping("/download/{name}")
     public void getDownload(@PathVariable String name, HttpServletRequest request, HttpServletResponse response) {
