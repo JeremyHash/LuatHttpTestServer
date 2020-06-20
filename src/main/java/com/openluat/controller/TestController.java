@@ -1,20 +1,19 @@
 package com.openluat.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping(path = "/test")
 public class TestController {
 
+    @GetMapping(path = "/")
+    public String rootPathHandler() {
+        return "JeremyHttpServerGetTest";
+    }
+
     @PostMapping(path = "/getContentLength")
-    public int postTest(@RequestBody String data) {
+    public int getContentLength(@RequestBody String data) {
         return data.length();
     }
 
-    @GetMapping(path = "/")
-    public String getPost() {
-        return "JeremyHttpServerGetTest";
-    }
 }
