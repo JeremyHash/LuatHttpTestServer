@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -16,11 +18,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 
-@Controller
+@RequestMapping("/download/{name}")
+@RestController
 @Slf4j
 public class BreakDownloadController {
 
-    @RequestMapping("/download/{name}")
+    @GetMapping("/")
     public void getDownload(@PathVariable String name, HttpServletRequest request, HttpServletResponse response) {
         // Get your file stream from wherever.
         log.debug("name = " + name);

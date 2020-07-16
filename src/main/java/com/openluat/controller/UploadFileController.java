@@ -1,9 +1,6 @@
 package com.openluat.controller;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedOutputStream;
@@ -12,14 +9,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Objects;
 
+/*
+ * 文件上传Controller
+ * */
+@RequestMapping("/uploadFile")
 @RestController
 public class UploadFileController {
 
-    /*
-     * 文件上传Controller
-     * */
-    @PostMapping("/uploadFile")
-    @ResponseBody
+    @PostMapping("/")
     public String handleFileUpload(@RequestParam("file") MultipartFile file) {
         if (!file.isEmpty()) {
             try {
