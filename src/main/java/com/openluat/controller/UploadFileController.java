@@ -1,5 +1,6 @@
 package com.openluat.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,12 +13,14 @@ import java.util.Objects;
 /*
  * 文件上传Controller
  * */
-@RequestMapping("/uploadFile")
+@Slf4j
 @RestController
 public class UploadFileController {
 
-    @PostMapping("/")
-    public String handleFileUpload(@RequestParam("file") MultipartFile file) {
+    @PostMapping("/uploadFile")
+    public String handleFileUpload(@RequestParam("imei") String imei, @RequestParam("time") String time, @RequestParam("file") MultipartFile file) {
+        log.info("imei:" + imei);
+        log.info("time:" + time);
         if (!file.isEmpty()) {
             try {
                 BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(Objects.requireNonNull(file.getOriginalFilename()))));
