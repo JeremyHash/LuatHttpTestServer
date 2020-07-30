@@ -1,18 +1,19 @@
 package com.openluat.controller;
 
+import com.openluat.pojo.GpsInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @Slf4j
 @RestController
@@ -69,10 +70,28 @@ public class PostController {
     }
 
     @PostMapping(path = "/withxwwwformurlencoded")
-    public ResponseEntity<String> xwwwformurlencodedTest(@RequestParam("content") String content,@RequestParam("author") String author) {
-        log.info("postTestWithxwwwformurlencoded.content:"+content);
-        log.info("postTestWithxwwwformurlencoded.author:"+author);
+    public ResponseEntity<String> xwwwformurlencodedTest(@RequestParam("content") String content, @RequestParam("author") String author) {
+        log.info("postTestWithxwwwformurlencoded.content:" + content);
+        log.info("postTestWithxwwwformurlencoded.author:" + author);
         return ResponseEntity.ok("postTestWithxwwwformurlencoded OK!");
+    }
+
+    @PostMapping(path = "/postGpsInfo")
+    public ResponseEntity<String> postGpsInfo(@RequestBody GpsInfo gpsInfo) throws IOException {
+        Date date = new Date();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String formateDate = df.format(date);
+        System.out.println(formateDate);
+        System.out.println("gpsInfo = " + gpsInfo);
+        File file = new File("./GpsInfo.txt");
+        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file, true));
+        bufferedWriter.write(formateDate);
+        bufferedWriter.write("\r\n");
+        bufferedWriter.write(gpsInfo.toString());
+        bufferedWriter.write("\r\n");
+        bufferedWriter.flush();
+        bufferedWriter.close();
+        return ResponseEntity.ok("GetGpsInfo OK!");
     }
 
 }

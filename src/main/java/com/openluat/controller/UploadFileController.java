@@ -18,7 +18,7 @@ import java.util.Objects;
 public class UploadFileController {
 
     @PostMapping("/uploadFile")
-    public String handleFileUpload(@RequestParam("imei") String imei, @RequestParam("time") String time, @RequestParam("file") MultipartFile file) {
+    public String handleFileUpload(@RequestParam("imei") String imei, @RequestParam("time") String time, @RequestParam("FormDataUploadFile") MultipartFile file) {
         log.info("imei:" + imei);
         log.info("time:" + time);
         if (!file.isEmpty()) {
