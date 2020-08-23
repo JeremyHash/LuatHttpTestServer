@@ -1,10 +1,13 @@
 package com.openluat.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.openluat.pojo.GpsInfo;
+import com.openluat.pojo.LbsLocInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.FileCopyUtils;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -91,7 +94,29 @@ public class PostController {
         bufferedWriter.write("\r\n");
         bufferedWriter.flush();
         bufferedWriter.close();
-        return ResponseEntity.ok("GetGpsInfo OK!");
+        return ResponseEntity.ok("PostGpsInfo OK!");
+    }
+
+    @PostMapping(path = "/postLbsLocInfo")
+    public ResponseEntity<String> postLbsLocInfo(@RequestBody LbsLocInfo lbsLocInfo) throws IOException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("lat", lbsLocInfo.getLat());
+        jsonObject.put("lng", lbsLocInfo.getLng());
+        jsonObject.put("timestamp", lbsLocInfo.getTimestamp());
+
+        Date date = new Date();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String formateDate = df.format(date);
+        log.info("PostLbsLocDate =  " + formateDate);
+        log.info("jsonObject = " + jsonObject);
+        File file = new File("./LbsLocInfo.txt");
+        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file, true));
+        bufferedWriter.write(jsonObject.toJSONString());
+        bufferedWriter.write(",\r\n");
+        bufferedWriter.flush();
+        bufferedWriter.close();
+        return ResponseEntity.ok("PostLbsLocInfo OK!");
+
     }
 
 }
