@@ -15,13 +15,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 
-@RequestMapping("/download/{name}")
 @RestController
 @Slf4j
 public class BreakDownloadController {
 
-    @GetMapping("/")
-    public void getDownload(@PathVariable String name, HttpServletRequest request, HttpServletResponse response) {
+    @GetMapping("/download/{name}")
+    public void breakDownload(@PathVariable String name, HttpServletRequest request, HttpServletResponse response) {
         // Get your file stream from wherever.
         log.debug("name = " + name);
         String fullPath = "static/" + name;

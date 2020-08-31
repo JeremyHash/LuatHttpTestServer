@@ -13,6 +13,8 @@ spring:
 logging:
   level:
     root: "debug"
+  file:
+    name: "log.txt"
 
 #ssl配置
 #server.ssl.key-store=classpath:server.key.p12
