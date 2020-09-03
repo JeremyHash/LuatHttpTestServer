@@ -9,10 +9,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class QueryAttendanceByPhoneNumber {
-    public static String query(String phoneNumber) throws ApiException, IOException {
+    public static String query(String phoneNumber) throws ApiException {
 
         int queryMonth = 9;
 
@@ -37,13 +38,14 @@ public class QueryAttendanceByPhoneNumber {
         returnInfo.append(queryMonth).append("月满分小时数 = ").append(fullScoreHours.intValue()).append("<br><br>");
 
         User yanjunjie = new User("testman", id);
-        HashMap<Integer, HashMap<String, Date>> attendanceDetail = queryUtils.queryAttendanceDetail(yanjunjie, 9, token);
+        HashMap<Integer, HashMap<String, Date>> attendanceDetail = queryUtils.queryAttendanceDetail(yanjunjie, queryMonth, token);
         returnInfo.append(queryMonth).append("月打卡情况：<br>");
-        returnInfo.append(attendanceDetail.toString()).append("<br><br>");
+        for (Map.Entry<Integer, HashMap<String, Date>> entry : attendanceDetail.entrySet()) {
+            returnInfo.append(entry.getKey()).append(entry.getValue()).append("<br>");
+        }
         HashMap<String, Float> timeCountMap = queryUtils.queryAttendInfo(attendanceDetail);
-
         Float minutesCount = timeCountMap.get("minutesCount");
-        returnInfo.append(queryMonth).append("月工作总分钟数 = ").append(minutesCount.intValue()).append("<br>");
+        returnInfo.append("<br>").append(queryMonth).append("月工作总分钟数 = ").append(minutesCount.intValue()).append("<br>");
         Float hoursCount = timeCountMap.get("hoursCount");
         returnInfo.append(queryMonth).append("月工作总小时数 = ").append(hoursCount).append("<br>");
         Float jigepercent = queryUtils.dived(minutesCount, jigeScoreMinutes);
