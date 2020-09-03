@@ -62,11 +62,11 @@ public class AttendanceQueryUtils {
             days = 30;
         }
 
-        float fullScoreMinutes = (days - 3) * 12 * 60;
-        float jigeScoreMinutes = (days - 3) * 10 * 60;
+        float jigeScoreHours = (days - 7) * 12;
+        float fullScoreHours = (days - 3) * 12;
 
-        float fullScoreHours = dived(fullScoreMinutes, 60);
-        float jigeScoreHours = dived(jigeScoreMinutes, 60);
+        float jigeScoreMinutes = jigeScoreHours * 60;
+        float fullScoreMinutes = fullScoreHours * 60;
 
         HashMap<String, Float> scoreMap = new HashMap<>();
         scoreMap.put("jigeScoreMinutes", jigeScoreMinutes);
@@ -110,7 +110,7 @@ public class AttendanceQueryUtils {
         //设置用户ID
         getAttendanceReq.setUserIdList(Collections.singletonList(user.getId()));
         //查询每天的考勤情况
-        HashMap<Integer, HashMap<String, Date>> AttendanceMap = new HashMap<Integer, HashMap<String, Date>>();
+        HashMap<Integer, HashMap<String, Date>> AttendanceMap = new HashMap<>();
 
         for (int i = 1; i <= 31; i++) {
             getAttendanceReq.setWorkDateFrom("2020-" + queryMonth + "-" + i + " 00:00:00");
@@ -120,7 +120,7 @@ public class AttendanceQueryUtils {
             List<OapiAttendanceListResponse.Recordresult> list = getAttendanceRes.getRecordresult();
             for (OapiAttendanceListResponse.Recordresult recordResult : list) {
                 Date userCheckTime = recordResult.getUserCheckTime();
-                HashMap<String, Date> dayMap = new HashMap<String, Date>();
+                HashMap<String, Date> dayMap = new HashMap<>();
                 String checkType = recordResult.getCheckType();
                 dayMap.put(checkType, userCheckTime);
                 HashMap<String, Date> mapTmp = AttendanceMap.get(i);
@@ -150,7 +150,7 @@ public class AttendanceQueryUtils {
     }
 
     //根据考勤记录计算时间
-    public HashMap<String, Float> queryAttendInfo(HashMap<Integer, HashMap<String, Date>> AttendanceMap) throws ApiException {
+    public HashMap<String, Float> queryAttendInfo(HashMap<Integer, HashMap<String, Date>> AttendanceMap) {
 
         int minutsCount = 0;
         float hoursCount = 0;
