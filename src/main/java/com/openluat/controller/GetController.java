@@ -16,6 +16,9 @@ import java.util.ArrayList;
 @RestController
 public class GetController {
 
+    @Autowired
+    QueryAttendanceByPhoneNumber queryAttendanceByPhoneNumber;
+
 
     @GetMapping(path = "/")
     public ResponseEntity<String> getTest() {
@@ -42,10 +45,10 @@ public class GetController {
     }
 
     @GetMapping(path = "/{phoneNumber}")
-    public ResponseEntity<String> queryAttendance(@PathVariable String phoneNumber) throws IOException, ApiException {
+    public ResponseEntity<String> queryAttendance(@PathVariable String phoneNumber) throws ApiException {
 
 
-        String queryInfo = QueryAttendanceByPhoneNumber.query(phoneNumber);
+        String queryInfo = queryAttendanceByPhoneNumber.query(phoneNumber);
 
         return new ResponseEntity<>(queryInfo, HttpStatus.OK);
     }

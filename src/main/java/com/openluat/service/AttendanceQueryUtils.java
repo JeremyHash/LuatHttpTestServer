@@ -4,7 +4,6 @@ import com.dingtalk.api.DefaultDingTalkClient;
 import com.dingtalk.api.DingTalkClient;
 import com.dingtalk.api.request.*;
 import com.dingtalk.api.response.*;
-import com.openluat.pojo.User;
 import com.taobao.api.ApiException;
 
 import java.text.DecimalFormat;
@@ -51,32 +50,7 @@ public class AttendanceQueryUtils {
         return accessToken;
     }
 
-    //查询考勤分数线
-    public HashMap<String, Float> queryScoreAim(int queryMonth) {
-        int days;
-        if (queryMonth == 2) {
-            days = 29;
-        } else if (queryMonth == 1 || queryMonth == 3 || queryMonth == 5 || queryMonth == 7 || queryMonth == 8 || queryMonth == 10 || queryMonth == 12) {
-            days = 31;
-        } else {
-            days = 30;
-        }
-
-        float jigeScoreHours = (days - 7) * 12;
-        float fullScoreHours = (days - 3) * 12;
-
-        float jigeScoreMinutes = jigeScoreHours * 60;
-        float fullScoreMinutes = fullScoreHours * 60;
-
-        HashMap<String, Float> scoreMap = new HashMap<>();
-        scoreMap.put("jigeScoreMinutes", jigeScoreMinutes);
-        scoreMap.put("fullScoreMinutes", fullScoreMinutes);
-        scoreMap.put("jigeScoreHours", jigeScoreHours);
-        scoreMap.put("fullScoreHours", fullScoreHours);
-        return scoreMap;
-    }
-
-    //        查询部门
+    //查询部门
     public void queryDepartment(String accessToken) throws ApiException {
         DingTalkClient getDepartmentClient = new DefaultDingTalkClient("https://oapi.dingtalk.com/department/list");
         OapiDepartmentListRequest getDepartmentReq = new OapiDepartmentListRequest();
@@ -102,17 +76,17 @@ public class AttendanceQueryUtils {
     }
 
     //查询考勤记录
-    public HashMap<Integer, HashMap<String, Date>> queryAttendanceDetail(User user, int queryMonth, String accessToken) throws ApiException {
+    public HashMap<Integer, HashMap<String, Date>> queryAttendanceDetail(String id, int queryMonth, String accessToken) throws ApiException {
         DingTalkClient getAttendanceClient = new DefaultDingTalkClient("https://oapi.dingtalk.com/attendance/list");
         OapiAttendanceListRequest getAttendanceReq = new OapiAttendanceListRequest();
         getAttendanceReq.setOffset(0L);
         getAttendanceReq.setLimit(50L);
         //设置用户ID
-        getAttendanceReq.setUserIdList(Collections.singletonList(user.getId()));
+        getAttendanceReq.setUserIdList(Collections.singletonList(id));
         //查询每天的考勤情况
         HashMap<Integer, HashMap<String, Date>> AttendanceMap = new HashMap<>();
 
-        for (int i = 1; i <= 31; i++) {
+        for (int i = 1; i <= Calendar.getInstance().get(Calendar.DAY_OF_MONTH); i++) {
             getAttendanceReq.setWorkDateFrom("2020-" + queryMonth + "-" + i + " 00:00:00");
             getAttendanceReq.setWorkDateTo("2020-" + queryMonth + "-" + i + " 00:00:00");
             OapiAttendanceListResponse getAttendanceRes = getAttendanceClient.execute(getAttendanceReq, accessToken);
@@ -150,13 +124,13 @@ public class AttendanceQueryUtils {
     }
 
     //根据考勤记录计算时间
-    public HashMap<String, Float> queryAttendInfo(HashMap<Integer, HashMap<String, Date>> AttendanceMap) {
+    public int queryAttendMinutes(HashMap<Integer, HashMap<String, Date>> AttendanceMap) {
 
         int minutsCount = 0;
-        float hoursCount = 0;
         for (Map.Entry<Integer, HashMap<String, Date>> entry : AttendanceMap.entrySet()) {
-            Date onDuty = entry.getValue().get("OnDuty");
-            Date offDuty = entry.getValue().get("OffDuty");
+            HashMap<String, Date> dayinfo = entry.getValue();
+            Date onDuty = dayinfo.get("OnDuty");
+            Date offDuty = dayinfo.get("OffDuty");
             if (onDuty == null || offDuty == null) {
                 continue;
             }
@@ -164,15 +138,11 @@ public class AttendanceQueryUtils {
             long OffDutyTime = onDuty.getTime();
             long seconds = (onDutyTime - OffDutyTime) / 1000;
             float minutes = dived(seconds, 60);
-            float hours = dived(minutes, 60);
             int roundMinutes = Math.round(minutes);
             minutsCount += roundMinutes;
-            hoursCount += hours;
         }
-        HashMap<String, Float> timeCountMap = new HashMap<>();
-        timeCountMap.put("minutesCount", (float) minutsCount);
-        timeCountMap.put("hoursCount", hoursCount);
-        return timeCountMap;
+
+        return minutsCount;
 
     }
 }
