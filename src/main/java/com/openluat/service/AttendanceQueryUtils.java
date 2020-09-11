@@ -84,9 +84,11 @@ public class AttendanceQueryUtils {
         //设置用户ID
         getAttendanceReq.setUserIdList(Collections.singletonList(id));
         //查询每天的考勤情况
-        HashMap<Integer, HashMap<String, Date>> AttendanceMap = new HashMap<>();
+        HashMap<Integer, HashMap<String, Date>> attendanceMap = new HashMap<>();
 
-        for (int i = 1; i <= Calendar.getInstance().get(Calendar.DAY_OF_MONTH); i++) {
+        int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+
+        for (int i = 1; i <= currentDay; i++) {
             getAttendanceReq.setWorkDateFrom("2020-" + queryMonth + "-" + i + " 00:00:00");
             getAttendanceReq.setWorkDateTo("2020-" + queryMonth + "-" + i + " 00:00:00");
             OapiAttendanceListResponse getAttendanceRes = getAttendanceClient.execute(getAttendanceReq, accessToken);
@@ -97,9 +99,9 @@ public class AttendanceQueryUtils {
                 HashMap<String, Date> dayMap = new HashMap<>();
                 String checkType = recordResult.getCheckType();
                 dayMap.put(checkType, userCheckTime);
-                HashMap<String, Date> mapTmp = AttendanceMap.get(i);
+                HashMap<String, Date> mapTmp = attendanceMap.get(i);
                 if (mapTmp == null) {
-                    AttendanceMap.put(i, dayMap);
+                    attendanceMap.put(i, dayMap);
                 } else {
                     if (mapTmp.get(checkType) != null) {
                         if (checkType.equals("OnDuty")) {
@@ -120,14 +122,14 @@ public class AttendanceQueryUtils {
             }
         }
 
-        return AttendanceMap;
+        return attendanceMap;
     }
 
     //根据考勤记录计算时间
-    public int queryAttendMinutes(HashMap<Integer, HashMap<String, Date>> AttendanceMap) {
+    public int queryAttendMinutes(HashMap<Integer, HashMap<String, Date>> attendanceMap) {
 
         int minutsCount = 0;
-        for (Map.Entry<Integer, HashMap<String, Date>> entry : AttendanceMap.entrySet()) {
+        for (Map.Entry<Integer, HashMap<String, Date>> entry : attendanceMap.entrySet()) {
             HashMap<String, Date> dayinfo = entry.getValue();
             Date onDuty = dayinfo.get("OnDuty");
             Date offDuty = dayinfo.get("OffDuty");
@@ -137,6 +139,13 @@ public class AttendanceQueryUtils {
             long onDutyTime = offDuty.getTime();
             long OffDutyTime = onDuty.getTime();
             long seconds = (onDutyTime - OffDutyTime) / 1000;
+            Integer day = entry.getKey();
+            if (day == 5 || day == 6 || day == 12 || day == 13 || day == 19 || day == 20 || day == 26) {
+            } else {
+                if (seconds <= 32400) {
+                    seconds = 32400;
+                }
+            }
             float minutes = dived(seconds, 60);
             int roundMinutes = Math.round(minutes);
             minutsCount += roundMinutes;

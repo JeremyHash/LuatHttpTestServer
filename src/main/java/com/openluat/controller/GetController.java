@@ -10,8 +10,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 public class GetController {
@@ -46,11 +47,22 @@ public class GetController {
 
     @GetMapping(path = "/{phoneNumber}")
     public ResponseEntity<String> queryAttendance(@PathVariable String phoneNumber) throws ApiException {
+        String pattern = "(13|14|15|18|17)[0-9]{9}";
+        boolean matchRes = phoneNumber.matches(pattern);
+        if (matchRes) {
+            String queryInfo = queryAttendanceByPhoneNumber.query(phoneNumber);
 
+            return new ResponseEntity<>(queryInfo, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("<h1>输入的手机号码<" + phoneNumber + ">有误！</h1>", HttpStatus.BAD_REQUEST);
+        }
 
-        String queryInfo = queryAttendanceByPhoneNumber.query(phoneNumber);
+    }
 
-        return new ResponseEntity<>(queryInfo, HttpStatus.OK);
+    @GetMapping(path = "/phoneNumber")
+    public ResponseEntity<String> queryAttendanceHelp() throws ApiException {
+
+        return new ResponseEntity<>("<h1>请将地址栏中phoneNumber替换为你要查询考勤的手机号</h1>", HttpStatus.OK);
     }
 
 }
