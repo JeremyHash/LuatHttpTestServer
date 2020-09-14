@@ -47,7 +47,7 @@ public class GetController {
 
     @GetMapping(path = "/{phoneNumber}")
     public ResponseEntity<String> queryAttendance(@PathVariable String phoneNumber) throws ApiException {
-        String pattern = "(13|14|15|18|17)[0-9]{9}";
+        String pattern = "(13|14|15|16|17|18)[0-9]{9}";
         boolean matchRes = phoneNumber.matches(pattern);
         if (matchRes) {
             String queryInfo = queryAttendanceByPhoneNumber.query(phoneNumber);
