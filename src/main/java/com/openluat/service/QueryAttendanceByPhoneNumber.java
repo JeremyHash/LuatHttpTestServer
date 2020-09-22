@@ -13,9 +13,11 @@ import java.util.Map;
 @Service
 public class QueryAttendanceByPhoneNumber {
 
-    @Autowired
-    public ScoreAim scoreAim;
-    private Integer day;
+    public final ScoreAim scoreAim;
+
+    public QueryAttendanceByPhoneNumber(ScoreAim scoreAim) {
+        this.scoreAim = scoreAim;
+    }
 
     public String query(String phoneNumber) throws ApiException {
 
@@ -46,7 +48,7 @@ public class QueryAttendanceByPhoneNumber {
         returnInfo.append(queryMonth).append("月打卡情况：<br>");
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
         for (Map.Entry<Integer, HashMap<String, Date>> entry : attendanceDetail.entrySet()) {
-            day = entry.getKey();
+            Integer day = entry.getKey();
             returnInfo.append(day).append("号：");
             HashMap<String, Date> dutyMap = entry.getValue();
             long OnDutyTime = 0;
@@ -65,7 +67,7 @@ public class QueryAttendanceByPhoneNumber {
                         returnInfo.append("（休息日工作）<br>");
                     } else {
                         if ((OffDutyTime - OnDutyTime) / 1000 <= 32400) {
-                            returnInfo.append("（当天可能存在早退或请假情况,按照9小时工时计算）<br>");
+                            returnInfo.append("（当天可能存在早退或请假或出差情况,按照9小时工时计算）<br>");
                         } else {
                             returnInfo.append("<br>");
                         }

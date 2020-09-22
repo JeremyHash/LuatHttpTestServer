@@ -17,8 +17,12 @@ import java.util.regex.Pattern;
 @RestController
 public class GetController {
 
-    @Autowired
+    final
     QueryAttendanceByPhoneNumber queryAttendanceByPhoneNumber;
+
+    public GetController(QueryAttendanceByPhoneNumber queryAttendanceByPhoneNumber) {
+        this.queryAttendanceByPhoneNumber = queryAttendanceByPhoneNumber;
+    }
 
 
     @GetMapping(path = "/")
