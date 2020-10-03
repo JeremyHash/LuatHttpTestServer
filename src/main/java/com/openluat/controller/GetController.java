@@ -1,8 +1,7 @@
 package com.openluat.controller;
 
-import com.openluat.service.QueryAttendanceByPhoneNumber;
+import com.openluat.service.QABPService;
 import com.taobao.api.ApiException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,17 +10,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @RestController
 public class GetController {
 
-    final
-    QueryAttendanceByPhoneNumber queryAttendanceByPhoneNumber;
+    final QABPService qabpService;
 
-    public GetController(QueryAttendanceByPhoneNumber queryAttendanceByPhoneNumber) {
-        this.queryAttendanceByPhoneNumber = queryAttendanceByPhoneNumber;
+    public GetController(QABPService qabpService) {
+        this.qabpService = qabpService;
     }
 
 
@@ -54,7 +50,7 @@ public class GetController {
         String pattern = "(13|14|15|16|17|18)[0-9]{9}";
         boolean matchRes = phoneNumber.matches(pattern);
         if (matchRes) {
-            String queryInfo = queryAttendanceByPhoneNumber.query(phoneNumber);
+            String queryInfo = qabpService.query(phoneNumber);
 
             return new ResponseEntity<>(queryInfo, HttpStatus.OK);
         } else {
@@ -64,7 +60,7 @@ public class GetController {
     }
 
     @GetMapping(path = "/phoneNumber")
-    public ResponseEntity<String> queryAttendanceHelp() throws ApiException {
+    public ResponseEntity<String> queryAttendanceHelp() {
 
         return new ResponseEntity<>("<h1>请将地址栏中phoneNumber替换为你要查询考勤的手机号</h1>", HttpStatus.OK);
     }

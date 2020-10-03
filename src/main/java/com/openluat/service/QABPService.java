@@ -2,20 +2,20 @@ package com.openluat.service;
 
 import com.openluat.pojo.ScoreAim;
 import com.taobao.api.ApiException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class QueryAttendanceByPhoneNumber {
+public class QABPService {
 
     public final ScoreAim scoreAim;
 
-    public QueryAttendanceByPhoneNumber(ScoreAim scoreAim) {
+    public QABPService(ScoreAim scoreAim) {
         this.scoreAim = scoreAim;
     }
 
@@ -23,7 +23,9 @@ public class QueryAttendanceByPhoneNumber {
 
         long startTime = System.currentTimeMillis();
 
-        int queryMonth = 9;
+        int queryMonth = Calendar.getInstance().get(Calendar.MONTH) + 1;
+
+        System.out.println("queryMonth = " + queryMonth);
 
         StringBuilder returnInfo = new StringBuilder();
         returnInfo.append("<h2>正在查询的号码为：").append(phoneNumber).append("</h2>");
@@ -46,13 +48,13 @@ public class QueryAttendanceByPhoneNumber {
 
         HashMap<Integer, HashMap<String, Date>> attendanceDetail = queryUtils.queryAttendanceDetail(id, queryMonth, token);
         returnInfo.append(queryMonth).append("月打卡情况：<br>");
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         for (Map.Entry<Integer, HashMap<String, Date>> entry : attendanceDetail.entrySet()) {
             Integer day = entry.getKey();
             returnInfo.append(day).append("号：");
             HashMap<String, Date> dutyMap = entry.getValue();
             long OnDutyTime = 0;
-            long OffDutyTime = 0;
+            long OffDutyTime;
             for (Map.Entry<String, Date> stringDateEntry : dutyMap.entrySet()) {
                 String dutyType = stringDateEntry.getKey();
                 Date dutyTime = stringDateEntry.getValue();
