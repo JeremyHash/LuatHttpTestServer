@@ -4,17 +4,8 @@
 LuatHttpTestServer
 
 #### 软件架构
-软件架构说明
-
-
-#### 安装教程
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 使用说明
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
+ + Java 11
+ + SpringBoot 2.3.0.RELEASE
+ + lombok 1.18.12
+ + fastjson 1.2.73
+ + alibaba-dingtalk-service-sdk 1.0.1
