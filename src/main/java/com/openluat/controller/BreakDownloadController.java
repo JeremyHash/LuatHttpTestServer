@@ -68,7 +68,7 @@ public class BreakDownloadController {
             }
             int size;
             if (toPos > fromPos) {
-                size = (int) (toPos - fromPos);
+                size = (int) (toPos - fromPos) + 1;
             } else {
                 size = (int) (downloadSize - fromPos);
             }
