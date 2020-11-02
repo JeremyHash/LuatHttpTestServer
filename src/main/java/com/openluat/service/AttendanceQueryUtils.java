@@ -5,10 +5,12 @@ import com.dingtalk.api.DingTalkClient;
 import com.dingtalk.api.request.*;
 import com.dingtalk.api.response.*;
 import com.taobao.api.ApiException;
+import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
 import java.util.*;
 
+@Service
 public class AttendanceQueryUtils {
 
     //除法

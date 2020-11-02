@@ -2,6 +2,7 @@ package com.openluat.service;
 
 import com.openluat.pojo.ScoreAim;
 import com.taobao.api.ApiException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -13,10 +14,13 @@ import java.util.Map;
 @Service
 public class QABPService {
 
-    public final ScoreAim scoreAim;
+    private final ScoreAim scoreAim;
 
-    public QABPService(ScoreAim scoreAim) {
+    private final AttendanceQueryUtils queryUtils;
+
+    public QABPService(ScoreAim scoreAim, AttendanceQueryUtils queryUtils) {
         this.scoreAim = scoreAim;
+        this.queryUtils = queryUtils;
     }
 
     public String query(String phoneNumber) throws ApiException {
@@ -29,8 +33,6 @@ public class QABPService {
 
         StringBuilder returnInfo = new StringBuilder();
         returnInfo.append("<h2>正在查询的号码为：").append(phoneNumber).append("</h2>");
-
-        AttendanceQueryUtils queryUtils = new AttendanceQueryUtils();
 
         String token = queryUtils.queryToken("dingmwwphiz0vzg6dmp6", "Tp6MfxCeIKHhJC7bQaN0sOPO26lqbXVZAkl6ZiuM6AMEG7rro4Azd1kfus309WEx");
 
@@ -65,7 +67,7 @@ public class QABPService {
                 } else {
                     OffDutyTime = dutyTime.getTime();
                     returnInfo.append("下班时间：").append(formatDutyTime);
-                    if (day == 1 || day == 2 || day == 3 || day == 4 || day == 5 || day == 6 || day == 7 || day == 8 || day == 11 || day == 17 || day == 18 || day == 24 || day == 25 || day == 31) {
+                    if (day == 1 || day == 7 || day == 8 || day == 14 || day == 15 || day == 21 || day == 22 || day == 28 || day == 29) {
                         returnInfo.append("（休息日工作）<br>");
                     } else {
                         if ((OffDutyTime - OnDutyTime) / 1000 <= 32400) {
