@@ -1,25 +1,25 @@
 package com.openluat.controller;
 
+
 import com.openluat.service.QABPService;
 import com.taobao.api.ApiException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 
 @RestController
 public class GetController {
 
-    final QABPService qabpService;
+    @Autowired
+    private QABPService qabpService;
 
-    public GetController(QABPService qabpService) {
-        this.qabpService = qabpService;
-    }
-
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
     @GetMapping(path = "/")
     public ResponseEntity<String> getTest() {
@@ -63,6 +63,27 @@ public class GetController {
     public ResponseEntity<String> queryAttendanceHelp() {
 
         return new ResponseEntity<>("<h1>请将地址栏中phoneNumber替换为你要查询考勤的手机号</h1>", HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/getCellLocInfo")
+    public ResponseEntity<String> getCellLocInfo() {
+        String cellLocInfo = redisTemplate.opsForValue().get("CellLocInfo");
+        if (cellLocInfo == null) {
+            return ResponseEntity.notFound().build();
+        } else {
+            return ResponseEntity.ok(cellLocInfo);
+        }
+    }
+
+
+    @GetMapping(path = "/getWiFiLocInfo")
+    public ResponseEntity<String> getWiFiLocInfo() {
+        String wiFiLocInfo = redisTemplate.opsForValue().get("WiFiLocInfo");
+        if (wiFiLocInfo == null) {
+            return ResponseEntity.notFound().build();
+        } else {
+            return ResponseEntity.ok(wiFiLocInfo);
+        }
     }
 
 }

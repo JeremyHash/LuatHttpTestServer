@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.openluat.pojo.GpsInfo;
 import com.openluat.pojo.LbsLocInfo;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.FileCopyUtils;
@@ -21,6 +23,9 @@ import java.util.Date;
 @Slf4j
 @RestController
 public class PostController {
+
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
     @PostMapping(path = "/")
     public ResponseEntity<String> postTest(@RequestBody String data) {
@@ -55,7 +60,7 @@ public class PostController {
         return ResponseEntity.ok("postTestWithxwwwformurlencoded OK!");
     }
 
-    @PostMapping(path = "/postGpsInfo")
+    @PostMapping(path = "/postGPSLocInfo")
     public ResponseEntity<String> postGpsInfo(@RequestBody GpsInfo gpsInfo) throws IOException {
         Date date = new Date();
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -73,26 +78,25 @@ public class PostController {
         return ResponseEntity.ok("PostGpsInfo OK!");
     }
 
-    @PostMapping(path = "/postLbsLocInfo")
-    public ResponseEntity<String> postLbsLocInfo(@RequestBody LbsLocInfo lbsLocInfo) throws IOException {
+    @PostMapping(path = "/postCellLocInfo")
+    public ResponseEntity<String> postCellLocInfo(@RequestBody LbsLocInfo lbsLocInfo) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("lat", lbsLocInfo.getLat());
         jsonObject.put("lng", lbsLocInfo.getLng());
         jsonObject.put("timestamp", lbsLocInfo.getTimestamp());
+        redisTemplate.opsForValue().set("CellLocInfo", jsonObject.toJSONString());
+        return ResponseEntity.ok("postCellLocInfo OK!");
+    }
 
-        Date date = new Date();
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String formateDate = df.format(date);
-        log.info("PostLbsLocDate =  " + formateDate);
-        log.info("jsonObject = " + jsonObject);
-        File file = new File("./LbsLocInfo.txt");
-        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file, true));
-        bufferedWriter.write(jsonObject.toJSONString());
-        bufferedWriter.write(",\r\n");
-        bufferedWriter.flush();
-        bufferedWriter.close();
-        return ResponseEntity.ok("PostLbsLocInfo OK!");
 
+    @PostMapping(path = "/postWiFiLocInfo")
+    public ResponseEntity<String> postWiFiLocInfo(@RequestBody LbsLocInfo lbsLocInfo) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("lat", lbsLocInfo.getLat());
+        jsonObject.put("lng", lbsLocInfo.getLng());
+        jsonObject.put("timestamp", lbsLocInfo.getTimestamp());
+        redisTemplate.opsForValue().set("WiFiLocInfo", jsonObject.toJSONString());
+        return ResponseEntity.ok("postWiFiLocInfo OK!");
     }
 
 }
