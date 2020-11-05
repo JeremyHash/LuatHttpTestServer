@@ -10,8 +10,8 @@ spring:
       max-request-size: "100MB"
   redis:
     password: "luat"
-    host: "wiki.airm2m.com"
-    port: 46379
+    host: "127.0.0.1"
+    port: 6379
 
 #log等级
 logging:
