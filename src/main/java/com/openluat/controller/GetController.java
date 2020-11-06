@@ -86,4 +86,14 @@ public class GetController {
         }
     }
 
+    @GetMapping(path = "/getGPSLocInfo")
+    public ResponseEntity<String> getGPSLocInfo() {
+        String gpsLocInfo = redisTemplate.opsForValue().get("GPSLocInfo");
+        if (gpsLocInfo == null) {
+            return ResponseEntity.notFound().build();
+        } else {
+            return ResponseEntity.ok(gpsLocInfo);
+        }
+    }
+
 }
