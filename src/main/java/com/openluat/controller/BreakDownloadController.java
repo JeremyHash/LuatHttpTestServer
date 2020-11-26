@@ -1,41 +1,40 @@
 package com.openluat.controller;
 
 
+import com.openluat.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
+import java.io.*;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 @RestController
 @Slf4j
 public class BreakDownloadController {
 
+    @Autowired
+    private Utils utils;
+
     @GetMapping("/download/{name}")
     public void breakDownload(@PathVariable String name, HttpServletRequest request, HttpServletResponse response) {
-        // Get your file stream from wherever.
-        log.debug("name = " + name);
         String fullPath = "static/" + name;
-        log.debug("下载路径:" + fullPath);
         File downloadFile = new File(fullPath);
 
-        if (downloadFile.exists()) {
-            log.debug(downloadFile.getName() + "文件存在");
-        } else {
-            log.debug(downloadFile.getName() + "文件不存在");
+        String md5 = utils.getMD5(downloadFile);
+
+        if (!downloadFile.exists()) {
             return;
         }
 
         ServletContext context = request.getServletContext();
-        // get MIME type of the file
         String mimeType = context.getMimeType(fullPath);
         if (mimeType == null) {
             // set to binary type if MIME mapping not found
@@ -50,6 +49,10 @@ public class BreakDownloadController {
         String headerKey = "Content-Disposition";
         String headerValue = String.format("attachment; filename=\"%s\"", downloadFile.getName());
         response.setHeader(headerKey, headerValue);
+        headerKey = "MD5";
+        headerValue = md5;
+        response.setHeader(headerKey, headerValue);
+
         // 解析断点续传相关信息
         response.setHeader("Accept-Ranges", "bytes");
         long downloadSize = downloadFile.length();

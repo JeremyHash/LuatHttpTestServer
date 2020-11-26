@@ -22,10 +22,20 @@ public class GetController {
     private RedisTemplate<String, String> redisTemplate;
 
     @GetMapping(path = "/")
-    public ResponseEntity<String> getTest() {
-        return new ResponseEntity<>("LuatHttpTestServerGetTestOK", HttpStatus.OK);
+    public ResponseEntity<String> getTest(@RequestParam("test1") String test1, @RequestParam("test2") String test2, @RequestParam("test3") String test3, @RequestParam("test4") String test4, @RequestParam("test5") String test5, @RequestParam("test6") String test6) {
+        if (test1.equals("1") && test2.equals("22") && test3.equals("333") && test4.equals("四四四四") && test5.equals("FiveFiveFiveFiveFive") && test6.equals("ろくろくろくろくろくろく")) {
+            return new ResponseEntity<>("getTestSuccess", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("getTestFail", HttpStatus.BAD_REQUEST);
+        }
+
     }
 
+    @GetMapping(path = "/waitTest")
+    public ResponseEntity<String> waitTest() throws InterruptedException {
+        Thread.sleep(15000);
+        return new ResponseEntity<>("waitTestSuccess", HttpStatus.OK);
+    }
 
     @GetMapping(path = "/redirect301")
     public ResponseEntity<String> redirectHandler1() {

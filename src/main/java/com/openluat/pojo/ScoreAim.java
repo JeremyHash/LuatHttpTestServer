@@ -1,10 +1,11 @@
 package com.openluat.pojo;
 
 import lombok.Data;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 @Data
-@Repository
+@Component
 public class ScoreAim {
     private int jigeScoreHours = 21 * 12;
     private int fullScoreHours = 25 * 12;

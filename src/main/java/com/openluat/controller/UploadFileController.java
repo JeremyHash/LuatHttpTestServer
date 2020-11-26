@@ -1,6 +1,10 @@
 package com.openluat.controller;
 
+import com.openluat.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,25 +21,36 @@ import java.util.Objects;
 @RestController
 public class UploadFileController {
 
+    @Autowired
+    private Utils utils;
+
     @PostMapping("/uploadFile")
-    public String handleFileUpload(@RequestParam("imei") String imei, @RequestParam("time") String time, @RequestParam("FormDataUploadFile") MultipartFile file) {
+    public ResponseEntity<String> handleFileUpload(@RequestParam("imei") String imei, @RequestParam("time") String time, @RequestParam("md5") String md5, @RequestParam("FormDataUploadFile") MultipartFile file) {
         log.info("imei:" + imei);
         log.info("time:" + time);
+        log.info("md5 = " + md5);
+        File localFile;
+        String calMD5;
         if (!file.isEmpty()) {
             try {
-                BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(Objects.requireNonNull(file.getOriginalFilename()))));
+                localFile = new File(file.getOriginalFilename());
+                BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(localFile));
                 out.write(file.getBytes());
                 out.flush();
                 out.close();
+                calMD5 = utils.getMD5(localFile);
+                log.info("calMD5 = " + calMD5);
             } catch (IOException e) {
                 e.printStackTrace();
-                return "上传失败," + e.getMessage();
+                return new ResponseEntity<>("上传失败," + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
             }
-
-            return "上传成功";
-
+            if (calMD5.equals(md5)) {
+                return new ResponseEntity<>("postTestWithMultipartFormDataSuccess", HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("postTestWithMultipartFormDataFail", HttpStatus.BAD_REQUEST);
+            }
         } else {
-            return "上传失败，因为文件是空的";
+            return new ResponseEntity<>("上传失败，因为文件是空的", HttpStatus.BAD_REQUEST);
         }
     }
 }
