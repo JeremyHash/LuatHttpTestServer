@@ -28,8 +28,6 @@ public class QABPService {
 
         int queryMonth = Calendar.getInstance().get(Calendar.MONTH) + 1;
 
-        System.out.println("queryMonth = " + queryMonth);
-
         StringBuilder returnInfo = new StringBuilder();
         returnInfo.append("<h2>正在查询的号码为：").append(phoneNumber).append("</h2>");
 
@@ -66,8 +64,10 @@ public class QABPService {
                 } else {
                     OffDutyTime = dutyTime.getTime();
                     returnInfo.append("下班时间：").append(formatDutyTime);
-                    if (day == 1 || day == 7 || day == 8 || day == 14 || day == 15 || day == 21 || day == 22 || day == 28 || day == 29) {
-                        returnInfo.append("（休息日工作）<br>");
+                    if (day == 5 || day == 12 || day == 19 || day == 26) {
+                        returnInfo.append("（周六工作按1.5倍时长计算）<br>");
+                    } else if (day == 6 || day == 13 || day == 20 || day == 27) {
+                        returnInfo.append("（周日工作）<br>");
                     } else {
                         if ((OffDutyTime - OnDutyTime) / 1000 <= 32400) {
                             returnInfo.append("（当天可能存在早退或请假或出差情况,按照9小时工时计算）<br>");

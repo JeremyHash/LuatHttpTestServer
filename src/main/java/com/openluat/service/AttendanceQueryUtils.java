@@ -142,14 +142,18 @@ public class AttendanceQueryUtils {
             long OffDutyTime = onDuty.getTime();
             long seconds = (onDutyTime - OffDutyTime) / 1000;
             Integer day = entry.getKey();
-            if (day == 5 || day == 6 || day == 12 || day == 13 || day == 19 || day == 20 || day == 26) {
+            if (day == 5 || day == 6 || day == 12 || day == 13 || day == 19 || day == 20 || day == 26 || day == 27) {
             } else {
                 if (seconds <= 32400) {
                     seconds = 32400;
                 }
             }
             float minutes = dived(seconds, 60);
+            if (day == 5 || day == 12 || day == 19 || day == 26) {
+                minutes *= 1.5;
+            }
             int roundMinutes = Math.round(minutes);
+
             minutsCount += roundMinutes;
         }
 
