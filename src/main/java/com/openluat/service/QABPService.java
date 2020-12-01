@@ -35,14 +35,10 @@ public class QABPService {
 
         String id = queryUtils.queryUserIdByPhoneNumber(phoneNumber, token);
 
-        int jigeScoreHours = scoreAim.getJigeScoreHours();
         int fullScoreHours = scoreAim.getFullScoreHours();
-        int jigeScoreMinutes = scoreAim.getJigeScoreMinutes();
         int fullScoreMinutes = scoreAim.getFullScoreMinutes();
 
-        returnInfo.append(queryMonth).append("月及格分钟数 = ").append(jigeScoreMinutes).append("<br>");
         returnInfo.append(queryMonth).append("月满分分钟数 = ").append(fullScoreMinutes).append("<br>");
-        returnInfo.append(queryMonth).append("月及格小时数 = ").append(jigeScoreHours).append("<br>");
         returnInfo.append(queryMonth).append("月满分小时数 = ").append(fullScoreHours).append("<br><br>");
 
         HashMap<Integer, HashMap<String, Date>> attendanceDetail = queryUtils.queryAttendanceDetail(id, queryMonth, token);
@@ -83,11 +79,6 @@ public class QABPService {
         float hoursCount = queryUtils.dived(minutesCount, 60);
         returnInfo.append(queryMonth).append("月工作总小时数 = ").append(hoursCount).append("<br>");
 
-        if (minutesCount > jigeScoreMinutes) {
-            returnInfo.append(queryMonth).append("月及格了").append("<br>");
-        } else {
-            returnInfo.append(queryMonth).append("月距离及格还差").append(jigeScoreMinutes - minutesCount).append("分钟，或").append(jigeScoreHours - hoursCount).append("小时").append("<br>");
-        }
         if (minutesCount > fullScoreMinutes) {
             returnInfo.append(queryMonth).append("月满分了").append("<br>");
         } else {

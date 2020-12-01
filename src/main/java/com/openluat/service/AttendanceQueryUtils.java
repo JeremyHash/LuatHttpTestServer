@@ -144,7 +144,7 @@ public class AttendanceQueryUtils {
             Integer day = entry.getKey();
             if (day == 5 || day == 6 || day == 12 || day == 13 || day == 19 || day == 20 || day == 26 || day == 27) {
             } else {
-                if (seconds <= 32400) {
+                if (seconds < 32400) {
                     seconds = 32400;
                 }
             }
