@@ -2,7 +2,6 @@ package com.openluat.service;
 
 import com.openluat.pojo.ScoreAim;
 import com.taobao.api.ApiException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;

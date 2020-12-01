@@ -76,9 +76,9 @@ public class PostController {
     @PostMapping(path = "/withxwwwformurlencoded")
     public ResponseEntity<String> xwwwformurlencodedTest(@RequestParam("content") String content, @RequestParam("author") String author, @RequestParam("email") String email, @RequestParam("userName") String userName, @RequestParam("passwd") String passwd) {
         if (content.equals("x-www-form-urlencoded Test") && author.equals("LuatTest") && email.equals("yanjunjie@airm2m.com") && userName.equals("yanjunjie") && passwd.equals("1234567890!@#$%^&*()")) {
-            return ResponseEntity.ok("postTestWithMultipartFormDataSuccess");
+            return ResponseEntity.ok("postTestWithXwwwformurlencodedSuccess");
         } else {
-            return new ResponseEntity<>("postTestWithMultipartFormDataFail", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("postTestWithXwwwformurlencodedFail", HttpStatus.BAD_REQUEST);
         }
     }
 
