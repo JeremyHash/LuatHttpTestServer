@@ -115,15 +115,12 @@ public class AttendanceQueryUtils {
                                 mapTmp.put(checkType, userCheckTime);
                             }
                         }
-
-
                     } else {
                         mapTmp.put(checkType, userCheckTime);
                     }
                 }
             }
         }
-
         return attendanceMap;
     }
 

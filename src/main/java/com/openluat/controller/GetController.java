@@ -61,7 +61,6 @@ public class GetController {
         boolean matchRes = phoneNumber.matches(pattern);
         if (matchRes) {
             String queryInfo = qabpService.query(phoneNumber);
-
             return new ResponseEntity<>(queryInfo, HttpStatus.OK);
         } else {
             return new ResponseEntity<>("<h1>输入的手机号码<" + phoneNumber + ">有误！</h1>", HttpStatus.BAD_REQUEST);
