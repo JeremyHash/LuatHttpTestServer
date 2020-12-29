@@ -41,7 +41,7 @@ public class GetController {
     public ResponseEntity<String> redirectHandler1() {
         HttpHeaders httpHeaders = new HttpHeaders();
         ArrayList<String> list = new ArrayList<>();
-        list.add("http://www.openluat.com/Product/images/720dmod/1.png");
+        list.add("http://www.openluat.com/static/LuatOS.203be699.jpg");
         httpHeaders.put("location", list);
         return new ResponseEntity<>(httpHeaders, HttpStatus.MOVED_PERMANENTLY);
     }
