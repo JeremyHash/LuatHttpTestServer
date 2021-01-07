@@ -91,8 +91,8 @@ public class AttendanceQueryUtils {
         int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
 
         for (int i = 1; i <= currentDay; i++) {
-            getAttendanceReq.setWorkDateFrom("2020-" + queryMonth + "-" + i + " 00:00:00");
-            getAttendanceReq.setWorkDateTo("2020-" + queryMonth + "-" + i + " 00:00:00");
+            getAttendanceReq.setWorkDateFrom("2021-" + queryMonth + "-" + i + " 00:00:00");
+            getAttendanceReq.setWorkDateTo("2021-" + queryMonth + "-" + i + " 00:00:00");
             OapiAttendanceListResponse getAttendanceRes = getAttendanceClient.execute(getAttendanceReq, accessToken);
             //一天中的考勤次数情况
             List<OapiAttendanceListResponse.Recordresult> list = getAttendanceRes.getRecordresult();
@@ -139,14 +139,14 @@ public class AttendanceQueryUtils {
             long OffDutyTime = onDuty.getTime();
             long seconds = (onDutyTime - OffDutyTime) / 1000;
             Integer day = entry.getKey();
-            if (day == 5 || day == 6 || day == 12 || day == 13 || day == 19 || day == 20 || day == 26 || day == 27) {
+            if (day == 2 || day == 3 || day == 9 || day == 10 || day == 16 || day == 17 || day == 23 || day == 24 || day == 30 || day == 31) {
             } else {
                 if (seconds < 32400) {
                     seconds = 32400;
                 }
             }
             float minutes = dived(seconds, 60);
-            if (day == 5 || day == 12 || day == 19 || day == 26) {
+            if (day == 2 || day == 9 || day == 16 || day == 23 || day == 30) {
                 minutes *= 1.5;
             }
             int roundMinutes = Math.round(minutes);
