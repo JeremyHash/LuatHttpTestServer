@@ -1,6 +1,6 @@
 #Tomcat端口
 server:
-  port: 8080
+  port: 2900
 
 #上传文件大小限制
 spring:
