@@ -13,6 +13,10 @@ import java.util.*;
 @Service
 public class AttendanceQueryUtils {
 
+    int[] offDutyList = {6, 11, 12, 13, 14, 15, 16, 17, 21, 27, 28};
+
+    int[] saturDayList = {6, 13, 27};
+
     //除法
     public Float dived(float a, float b) {
 
@@ -139,16 +143,23 @@ public class AttendanceQueryUtils {
             long OffDutyTime = onDuty.getTime();
             long seconds = (onDutyTime - OffDutyTime) / 1000;
             Integer day = entry.getKey();
-            if (day == 2 || day == 3 || day == 9 || day == 10 || day == 16 || day == 17 || day == 23 || day == 24 || day == 30 || day == 31) {
-            } else {
-                if (seconds < 32400) {
-                    seconds = 32400;
+
+            for (int i : offDutyList) {
+                if (day != i) {
+                    if (seconds < 32400) {
+                        seconds = 32400;
+                    }
                 }
             }
+
             float minutes = dived(seconds, 60);
-            if (day == 2 || day == 9 || day == 16 || day == 23 || day == 30) {
-                minutes *= 1.5;
+
+            for (int i : saturDayList) {
+                if (day == i) {
+                    minutes *= 1.5;
+                }
             }
+
             int roundMinutes = Math.round(minutes);
 
             minutsCount += roundMinutes;
