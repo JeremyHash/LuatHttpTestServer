@@ -13,9 +13,9 @@ import java.util.*;
 @Service
 public class AttendanceQueryUtils {
 
-    int[] offDutyList = {6, 11, 12, 13, 14, 15, 16, 17, 21, 27, 28};
+    int[] offDutyList = {6, 7, 13, 14, 20, 21, 27, 28};
 
-    int[] saturDayList = {6, 13, 27};
+    int[] saturDayList = {6, 13, 20, 27};
 
     //除法
     public Float dived(float a, float b) {

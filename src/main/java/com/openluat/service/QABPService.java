@@ -60,9 +60,9 @@ public class QABPService {
                 } else {
                     OffDutyTime = dutyTime.getTime();
                     returnInfo.append("下班时间：").append(formatDutyTime);
-                    if (day == 6 || day == 27) {
+                    if (day == 6 || day == 13 || day == 20 || day == 27) {
                         returnInfo.append("（周六工作按1.5倍时长计算）<br>");
-                    } else if (day == 21 || day == 28) {
+                    } else if (day == 7 || day == 14 || day == 21 || day == 28) {
                         returnInfo.append("（周日工作）<br>");
                     } else {
                         if ((OffDutyTime - OnDutyTime) / 1000 <= 32400) {

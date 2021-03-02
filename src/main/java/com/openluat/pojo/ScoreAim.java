@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 @Data
 @Component
 public class ScoreAim {
-    private int fullScoreHours = 19 * 12;
+    private int fullScoreHours = 27 * 12;
     private int fullScoreMinutes = fullScoreHours * 60;
 
 }
