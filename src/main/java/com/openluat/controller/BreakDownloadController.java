@@ -1,6 +1,5 @@
 package com.openluat.controller;
 
-
 import com.openluat.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,9 +11,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 @RestController
 @Slf4j
@@ -96,7 +92,7 @@ public class BreakDownloadController {
             while ((num = in.read(buffer)) != -1) {
                 out.write(buffer, 0, num);
                 count += num;
-                //处理最后一段，计算不满缓冲区的大小
+                // 处理最后一段，计算不满缓冲区的大小
                 if (downloadSize - count < bufLen) {
                     bufLen = (int) (downloadSize - count);
                     if (bufLen == 0) {

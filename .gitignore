@@ -29,3 +29,10 @@ hs_err_pid*
 .idea
 /LuatHttpTestServer.iml
 /target/
+
+.vscode
+.settings
+.classpath
+.factorypath
+.project
+log*.txt

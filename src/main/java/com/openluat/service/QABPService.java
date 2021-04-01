@@ -31,7 +31,8 @@ public class QABPService {
         StringBuilder returnInfo = new StringBuilder();
         returnInfo.append("<h2>正在查询的号码为：").append(phoneNumber).append("</h2>");
 
-        String token = queryUtils.queryToken("dingmwwphiz0vzg6dmp6", "Tp6MfxCeIKHhJC7bQaN0sOPO26lqbXVZAkl6ZiuM6AMEG7rro4Azd1kfus309WEx");
+        String token = queryUtils.queryToken("dingmwwphiz0vzg6dmp6",
+                "Tp6MfxCeIKHhJC7bQaN0sOPO26lqbXVZAkl6ZiuM6AMEG7rro4Azd1kfus309WEx");
 
         String id = queryUtils.queryUserIdByPhoneNumber(phoneNumber, token);
 
@@ -41,7 +42,8 @@ public class QABPService {
         returnInfo.append(queryMonth).append("月满分分钟数 = ").append(fullScoreMinutes).append("<br>");
         returnInfo.append(queryMonth).append("月满分小时数 = ").append(fullScoreHours).append("<br><br>");
 
-        HashMap<Integer, HashMap<String, Date>> attendanceDetail = queryUtils.queryAttendanceDetail(id, queryMonth, token);
+        HashMap<Integer, HashMap<String, Date>> attendanceDetail = queryUtils.queryAttendanceDetail(id, queryMonth,
+                token);
         returnInfo.append(queryMonth).append("月打卡情况：<br>");
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         for (Map.Entry<Integer, HashMap<String, Date>> entry : attendanceDetail.entrySet()) {
@@ -60,9 +62,9 @@ public class QABPService {
                 } else {
                     OffDutyTime = dutyTime.getTime();
                     returnInfo.append("下班时间：").append(formatDutyTime);
-                    if (day == 6 || day == 13 || day == 20 || day == 27) {
+                    if (day == 10 || day == 17 || day == 24) {
                         returnInfo.append("（周六工作按1.5倍时长计算）<br>");
-                    } else if (day == 7 || day == 14 || day == 21 || day == 28) {
+                    } else if (day == 11 || day == 18) {
                         returnInfo.append("（周日工作）<br>");
                     } else {
                         if ((OffDutyTime - OnDutyTime) / 1000 <= 32400) {
@@ -82,7 +84,8 @@ public class QABPService {
         if (minutesCount > fullScoreMinutes) {
             returnInfo.append(queryMonth).append("月满分了").append("<br>");
         } else {
-            returnInfo.append(queryMonth).append("月距离满分还差").append(fullScoreMinutes - minutesCount).append("分钟，或").append(fullScoreHours - hoursCount).append("小时").append("<br>");
+            returnInfo.append(queryMonth).append("月距离满分还差").append(fullScoreMinutes - minutesCount).append("分钟，或")
+                    .append(fullScoreHours - hoursCount).append("小时").append("<br>");
         }
 
         long endTime = System.currentTimeMillis();

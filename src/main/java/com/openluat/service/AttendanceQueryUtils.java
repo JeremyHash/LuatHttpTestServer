@@ -13,20 +13,20 @@ import java.util.*;
 @Service
 public class AttendanceQueryUtils {
 
-    int[] offDutyList = {6, 7, 13, 14, 20, 21, 27, 28};
+    int[] offDutyList = { 3, 4, 5, 10, 11, 17, 18, 24 };
 
-    int[] saturDayList = {6, 13, 20, 27};
+    int[] saturDayList = { 10, 17, 24 };
 
-    //除法
+    // 除法
     public Float dived(float a, float b) {
 
-        DecimalFormat df = new DecimalFormat("0.00");//设置保留位数
+        DecimalFormat df = new DecimalFormat("0.00");// 设置保留位数
 
         return Float.valueOf(df.format(a / b));
 
     }
 
-    //通过手机号查询用户ID
+    // 通过手机号查询用户ID
     public String queryUserIdByPhoneNumber(String phoneNumber, String accessToken) throws ApiException {
         DingTalkClient client = new DefaultDingTalkClient("https://oapi.dingtalk.com/user/get_by_mobile");
         OapiUserGetByMobileRequest request = new OapiUserGetByMobileRequest();
@@ -36,7 +36,7 @@ public class AttendanceQueryUtils {
         return res.getUserid();
     }
 
-    //查询Token
+    // 查询Token
     public String queryToken(String appKey, String appSecret) {
         String accessToken = "";
         DefaultDingTalkClient getTokenClient = new DefaultDingTalkClient("https://oapi.dingtalk.com/gettoken");
@@ -56,7 +56,7 @@ public class AttendanceQueryUtils {
         return accessToken;
     }
 
-    //查询部门
+    // 查询部门
     public void queryDepartment(String accessToken) throws ApiException {
         DingTalkClient getDepartmentClient = new DefaultDingTalkClient("https://oapi.dingtalk.com/department/list");
         OapiDepartmentListRequest getDepartmentReq = new OapiDepartmentListRequest();
@@ -69,27 +69,32 @@ public class AttendanceQueryUtils {
         }
     }
 
-    //查询部门成员
-    private void queryDepartmentUser(long departmentId, String accessToken) throws ApiException {
-        DingTalkClient getUserClient = new DefaultDingTalkClient("https://oapi.dingtalk.com/user/simplelist");
-        OapiUserSimplelistRequest getUserReq = new OapiUserSimplelistRequest();
-        getUserReq.setDepartmentId(departmentId);
-        getUserReq.setHttpMethod("GET");
-        OapiUserSimplelistResponse getUserRes = getUserClient.execute(getUserReq, accessToken);
-        for (OapiUserSimplelistResponse.Userlist userlist : getUserRes.getUserlist()) {
-            System.out.println(userlist.getUserid() + userlist.getName());
-        }
-    }
+    // 查询部门成员
+    // private void queryDepartmentUser(long departmentId, String accessToken)
+    // throws ApiException {
+    // DingTalkClient getUserClient = new
+    // DefaultDingTalkClient("https://oapi.dingtalk.com/user/simplelist");
+    // OapiUserSimplelistRequest getUserReq = new OapiUserSimplelistRequest();
+    // getUserReq.setDepartmentId(departmentId);
+    // getUserReq.setHttpMethod("GET");
+    // OapiUserSimplelistResponse getUserRes = getUserClient.execute(getUserReq,
+    // accessToken);
+    // for (OapiUserSimplelistResponse.Userlist userlist : getUserRes.getUserlist())
+    // {
+    // System.out.println(userlist.getUserid() + userlist.getName());
+    // }
+    // }
 
-    //查询考勤记录
-    public HashMap<Integer, HashMap<String, Date>> queryAttendanceDetail(String id, int queryMonth, String accessToken) throws ApiException {
+    // 查询考勤记录
+    public HashMap<Integer, HashMap<String, Date>> queryAttendanceDetail(String id, int queryMonth, String accessToken)
+            throws ApiException {
         DingTalkClient getAttendanceClient = new DefaultDingTalkClient("https://oapi.dingtalk.com/attendance/list");
         OapiAttendanceListRequest getAttendanceReq = new OapiAttendanceListRequest();
         getAttendanceReq.setOffset(0L);
         getAttendanceReq.setLimit(50L);
-        //设置用户ID
+        // 设置用户ID
         getAttendanceReq.setUserIdList(Collections.singletonList(id));
-        //查询每天的考勤情况
+        // 查询每天的考勤情况
         HashMap<Integer, HashMap<String, Date>> attendanceMap = new HashMap<>();
 
         int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
@@ -98,7 +103,7 @@ public class AttendanceQueryUtils {
             getAttendanceReq.setWorkDateFrom("2021-" + queryMonth + "-" + i + " 00:00:00");
             getAttendanceReq.setWorkDateTo("2021-" + queryMonth + "-" + i + " 00:00:00");
             OapiAttendanceListResponse getAttendanceRes = getAttendanceClient.execute(getAttendanceReq, accessToken);
-            //一天中的考勤次数情况
+            // 一天中的考勤次数情况
             List<OapiAttendanceListResponse.Recordresult> list = getAttendanceRes.getRecordresult();
             for (OapiAttendanceListResponse.Recordresult recordResult : list) {
                 Date userCheckTime = recordResult.getUserCheckTime();
@@ -128,7 +133,7 @@ public class AttendanceQueryUtils {
         return attendanceMap;
     }
 
-    //根据考勤记录计算时间
+    // 根据考勤记录计算时间
     public int queryAttendMinutes(HashMap<Integer, HashMap<String, Date>> attendanceMap) {
 
         int minutsCount = 0;
