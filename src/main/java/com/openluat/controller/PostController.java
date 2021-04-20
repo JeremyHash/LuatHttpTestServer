@@ -37,6 +37,11 @@ public class PostController {
         }
     }
 
+    @PostMapping(path = "/calcPostDataLen")
+    public ResponseEntity<Integer> calcPostDataLen(@RequestBody String data) {
+        return ResponseEntity.ok(data.length());
+    }
+
     @PostMapping(path = "/postJsonTest")
     public ResponseEntity<String> postJsonTest(@RequestBody TestJson testJson) {
         if (testJson.getImei().equals("123456789012345") && testJson.getMcc().equals("460") && testJson.getMnc().equals("0") && testJson.getLac().equals("21133") && testJson.getCi().equals("52365") && testJson.getHex().equals("10")) {
