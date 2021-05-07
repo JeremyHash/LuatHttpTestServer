@@ -55,7 +55,7 @@ public class GetController {
         return new ResponseEntity<>(httpHeaders, HttpStatus.FOUND);
     }
 
-    @GetMapping(path = "/{phoneNumber}")
+    /*@GetMapping(path = "/{phoneNumber}")
     public ResponseEntity<String> queryAttendance(@PathVariable String phoneNumber) throws ApiException {
         String pattern = "(13|14|15|16|17|18)[0-9]{9}";
         boolean matchRes = phoneNumber.matches(pattern);
@@ -66,13 +66,13 @@ public class GetController {
             return new ResponseEntity<>("<h1>输入的手机号码<" + phoneNumber + ">有误！</h1>", HttpStatus.BAD_REQUEST);
         }
 
-    }
+    }*/
 
-    @GetMapping(path = "/phoneNumber")
+    /*@GetMapping(path = "/phoneNumber")
     public ResponseEntity<String> queryAttendanceHelp() {
 
         return new ResponseEntity<>("<h1>请将地址栏中phoneNumber替换为你要查询考勤的手机号</h1>", HttpStatus.OK);
-    }
+    }*/
 
     @GetMapping(path = "/getCellLocInfo")
     public ResponseEntity<String> getCellLocInfo() {
