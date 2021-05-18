@@ -1,8 +1,6 @@
 package com.openluat.controller;
 
 
-import com.openluat.service.QABPService;
-import com.taobao.api.ApiException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
@@ -14,9 +12,6 @@ import java.util.ArrayList;
 
 @RestController
 public class GetController {
-
-    @Autowired
-    private QABPService qabpService;
 
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
