@@ -4,7 +4,6 @@
 <head>
     <meta charset="utf-8">
     <title>WebSocket_Test</title>
-    <script type="text/javascript" src="/jquery-3.6.0.slim.min.js"></script>
 </head>
 
 <body>
@@ -20,7 +19,7 @@ Welcome<br/><input id="text" type="text"/>
     //判断当前浏览器是否支持WebSocket
     if ('WebSocket' in window) {
         //改成你的地址
-        websocket = new WebSocket("ws://localhost:2900/websocket");
+        websocket = new WebSocket("ws://airtest.openluat.com:2900/websocket");
     } else {
         alert('当前浏览器 Not support websocket')
     }
