@@ -30,6 +30,7 @@ public class PostController {
 
     @PostMapping(path = "/")
     public ResponseEntity<String> postTest(@RequestBody String data) {
+        log.debug("postTest.receiveData=" + data);
         if (data.equals("PostTest")) {
             return ResponseEntity.ok("postTestSuccess");
         } else {
