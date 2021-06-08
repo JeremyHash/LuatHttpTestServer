@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>socket</title>
+    <script src="jquery-3.6.0.slim.min.js"></script>
+</head>
+<body>
+<style type="text/css">
+    textarea {
+        resize: none;
+        width: 1500px;
+        height: 800px;
+    }
+
+    #serverAddress, #sendDataContent {
+        width: 500px;
+    }
+
+    #autoSendTime {
+        width: 50px;
+    }
+
+</style>
+<button id="switchTcpServer" jeremy="on">OpenTcpServer</button>
+<input id="serverAddress" disabled/>
+<hr>
+<div>
+    <textarea readonly id="history"></textarea>
+</div>
+<input type="text" id="sendDataContent">
+<button id="sendDataButton" disabled>send</button>
+<input type="checkbox" id="hexCheckBox">Hex
+<input type="checkbox" id="autoSendCheckBox">AutoSend
+<input type="text" id="autoSendTime">ms
+<script>
+    let switchTcpServerButton = $("#switchTcpServer")
+    let serverAddressInput = $("#serverAddress")
+    let history = $("#history")
+    let sendDataContent = $("#sendDataContent")
+    let sendDataButton = $("#sendDataButton")
+    let hexCheckBox = $("#hexCheckBox")
+    let autoSendCheckBox = $("#autoSendCheckBox")
+    let autoSendTime = $("#autoSendTime")
+    switchTcpServerButton.click(
+        function () {
+            if (switchTcpServerButton.attr("jeremy") === "on") {
+                switchTcpServerButton.attr("jeremy", "off")
+                switchTcpServerButton.text("CloseTcpServer")
+                serverAddressInput.attr("value", "tcp://airtest.openluat.com:2999")
+                sendDataButton.removeAttr("disabled")
+            } else {
+                switchTcpServerButton.attr("jeremy", "on")
+                switchTcpServerButton.text("OpenTcpServer")
+                serverAddressInput.attr("value", "")
+                sendDataButton.attr("disabled", "")
+            }
+        }
+    )
+    autoSendCheckBox.click(
+        function () {
+            console.log(autoSendCheckBox.attr("checked"))
+            if (autoSendCheckBox.attr("checked") === undefined) {
+                autoSendCheckBox.attr("checked", true)
+                return
+            }
+            if (autoSendCheckBox.attr("checked") === "checked") {
+                autoSendCheckBox.attr("checked", false)
+                return
+            }
+            if (autoSendCheckBox.attr("checked") === false) {
+                autoSendCheckBox.attr("checked", true)
+            }
+        }
+    )
+</script>
+</body>
+</html>
