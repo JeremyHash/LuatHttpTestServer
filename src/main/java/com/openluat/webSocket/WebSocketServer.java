@@ -8,7 +8,6 @@ import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-@Slf4j
 @Service
 @ServerEndpoint("/websocket")
 public class WebSocketServer {
@@ -31,21 +30,17 @@ public class WebSocketServer {
     }
 
     @OnMessage
-    public void onMessage(String message, Session session) {
+    public void onMessage(String message) {
         try {
-            this.sendMessage(message);
+            this.session.getBasicRemote().sendText(message);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     @OnError
-    public void onError(Session session, Throwable error) {
+    public void onError(Throwable error) {
         error.printStackTrace();
-    }
-
-    public void sendMessage(String message) throws IOException {
-        this.session.getBasicRemote().sendText(message);
     }
 
 }

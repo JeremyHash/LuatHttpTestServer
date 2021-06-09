@@ -7,10 +7,34 @@
 </head>
 <body>
 <style type="text/css">
-    textarea {
-        resize: none;
-        width: 1500px;
+    * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+    }
+
+    #app {
+        margin: 20px;
+    }
+
+    #main {
         height: 800px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    #history {
+        width: 70%;
+        height: 800px;
+        border: black solid 1px;
+        float: left;
+    }
+
+    #clientListShowArea {
+        width: 30%;
+        height: 800px;
+        padding-left: 10px;
+        float: left;
     }
 
     #serverAddress, #sendDataContent {
@@ -22,57 +46,135 @@
     }
 
 </style>
-<button id="switchTcpServer" jeremy="on">OpenTcpServer</button>
-<input id="serverAddress" disabled/>
-<hr>
-<div>
-    <textarea readonly id="history"></textarea>
+<div id="app">
+    <button id="switchTcpServer">OpenTcpServer</button>
+    <input id="serverAddress" disabled/>
+    <div id="main">
+        <div>
+            <div id="history"></div>
+        </div>
+        <div id="clientListShowArea">
+        </div>
+    </div>
+    <input type="text" id="sendDataContent">
+    <button id="sendDataButton" disabled>send</button>
+    <input type="file">
+    <button id="sendFileButton" disabled>send file</button>
+    <button id="switchHex">switch to hex mode</button>
+    <button id="switchAutoSend" disabled>start auto send</button>
+    <input type="text" id="autoSendTime">ms
 </div>
-<input type="text" id="sendDataContent">
-<button id="sendDataButton" disabled>send</button>
-<input type="checkbox" id="hexCheckBox">Hex
-<input type="checkbox" id="autoSendCheckBox">AutoSend
-<input type="text" id="autoSendTime">ms
 <script>
+    let clientMap = {}
+    let websocket = null
+    let connected = false
+    let autoSend = false
     let switchTcpServerButton = $("#switchTcpServer")
     let serverAddressInput = $("#serverAddress")
     let history = $("#history")
     let sendDataContent = $("#sendDataContent")
     let sendDataButton = $("#sendDataButton")
-    let hexCheckBox = $("#hexCheckBox")
-    let autoSendCheckBox = $("#autoSendCheckBox")
+    let sendFileButton = $("#sendFileButton")
+    let switchHex = $("#switchHex")
+    let switchAutoSend = $("#switchAutoSend")
     let autoSendTime = $("#autoSendTime")
+    let clientListShowArea = $("#clientListShowArea")
+    if ('WebSocket' in window) {
+        websocket = new WebSocket("ws://localhost:2900/socket");
+        websocket.onopen = function () {
+            console.log("ws 连接成功")
+        }
+        websocket.onmessage = function (event) {
+            let webSocketEvent = JSON.parse(event.data)
+            console.log(webSocketEvent)
+            let clientInfo = webSocketEvent.clientInfo.ip + ":" + webSocketEvent.clientInfo.port
+            let clientInfoFormat = clientInfo.replace(".", "")
+            clientInfoFormat = clientInfoFormat.replace(":", "")
+            if (webSocketEvent.event === "clientMsg") {
+                console.log("消息")
+                let date = new Date();
+                clientMap[clientInfoFormat].push({"time": date.toLocaleString(), "data": webSocketEvent.data})
+            } else if (webSocketEvent.event === "clientConnect") {
+                console.log("连接")
+                clientListShowArea.append("<div id=" + clientInfoFormat + " style='text-align: center; line-height: 50px; height: 50px; border: black solid 1px; margin: 10px; cursor: pointer'>" + clientInfo + "</div>")
+                clientMap[clientInfoFormat] = []
+            } else if (webSocketEvent.event === "clientDisConnect") {
+                console.log("断开连接")
+                let children = clientListShowArea.children()
+                for (let i = 0; i < children.length; i++) {
+                    if (children[i].innerText === clientInfo) {
+                        children[i].remove()
+                    }
+                }
+                delete clientMap[clientInfoFormat]
+            } else {
+                console.log("webSocketEvent:")
+                console.log(webSocketEvent)
+            }
+        }
+        websocket.onclose = function () {
+            console.log("ws 连接关闭")
+            websocket.send("CloseTcpServer")
+        }
+        websocket.onerror = function () {
+            console.log("ws 连接异常")
+        }
+        window.onbeforeunload = function () {
+
+        }
+    } else {
+        alert('当前浏览器不支持websocket')
+    }
+    clientListShowArea.on("click", "div", function () {
+        $("#clientListShowArea div").css("background-color", "white")
+        $(this).css("background-color", "yellow")
+    })
     switchTcpServerButton.click(
         function () {
-            if (switchTcpServerButton.attr("jeremy") === "on") {
-                switchTcpServerButton.attr("jeremy", "off")
+            if (!connected) {
+                websocket.send("OpenTcpServer")
+                connected = true
                 switchTcpServerButton.text("CloseTcpServer")
                 serverAddressInput.attr("value", "tcp://airtest.openluat.com:2999")
-                sendDataButton.removeAttr("disabled")
+                sendDataButton.attr("disabled", false)
+                sendFileButton.attr("disabled", false)
+                switchAutoSend.attr("disabled", false)
             } else {
-                switchTcpServerButton.attr("jeremy", "on")
+                websocket.send("CloseTcpServer")
+                clientListShowArea.html("")
+                connected = false
                 switchTcpServerButton.text("OpenTcpServer")
                 serverAddressInput.attr("value", "")
                 sendDataButton.attr("disabled", "")
+                sendFileButton.attr("disabled", "")
+                switchAutoSend.attr("disabled", "")
+                autoSend = false
+                switchAutoSend.text("start auto send")
             }
         }
     )
-    autoSendCheckBox.click(
+    switchAutoSend.click(
         function () {
-            console.log(autoSendCheckBox.attr("checked"))
-            if (autoSendCheckBox.attr("checked") === undefined) {
-                autoSendCheckBox.attr("checked", true)
-                return
-            }
-            if (autoSendCheckBox.attr("checked") === "checked") {
-                autoSendCheckBox.attr("checked", false)
-                return
-            }
-            if (autoSendCheckBox.attr("checked") === false) {
-                autoSendCheckBox.attr("checked", true)
+            if (autoSend === true) {
+                autoSend = false
+                switchAutoSend.text("start auto send")
+            } else {
+                autoSend = true
+                switchAutoSend.text("stop auto send")
             }
         }
     )
+    sendDataButton.click(
+        function () {
+            console.log(sendDataContent.val())
+            websocket.send(sendDataContent.val())
+        }
+    )
+
+    window.onbeforeunload = function () {
+        websocket.send("CloseTcpServer")
+    }
+
 </script>
 </body>
 </html>
