@@ -1,9 +1,10 @@
 package com.openluat.webSocket;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import io.netty.handler.codec.json.JsonObjectDecoder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.websocket.*;
@@ -12,18 +13,20 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @Slf4j
 @ServerEndpoint("/socket")
 public class SocketServer {
 
-    //与某个客户端的连接会话，需要通过它来给客户端发送数据
     private Session session;
 
     private ServerSocket server;
 
-    private ArrayList<Socket> clientList = new ArrayList<>();
+    private final HashMap<String, Socket> clientMap = new HashMap<>();
 
     @OnOpen
     public void onOpen(Session session) {
@@ -46,27 +49,28 @@ public class SocketServer {
                 public void run() {
                     server = new ServerSocket(2999);
                     while (true) {
-                        Socket client = null;
+                        Socket client;
                         try {
                             client = server.accept();
                         } catch (IOException e) {
                             e.printStackTrace();
-
-                            for (Socket socket : clientList) {
-                                socket.close();
+                            for (Map.Entry<String, Socket> entry : clientMap.entrySet()) {
+                                entry.getValue().close();
                             }
                             break;
                         }
-                        clientList.add(client);
                         JSONObject clientInfoJsonObject = new JSONObject();
+                        String clientIP = client.getInetAddress().toString().replaceAll("/", "");
+                        int clientPort = client.getPort();
                         clientInfoJsonObject.put("ip", client.getInetAddress());
                         clientInfoJsonObject.put("port", client.getPort());
+                        clientMap.put(clientIP + ":" + clientPort, client);
+                        System.out.println("clientMap = " + clientMap);
                         Socket finalClient = client;
                         new Thread(new Runnable() {
                             @SneakyThrows
                             @Override
                             public void run() {
-                                log.info("客户端:" + finalClient.getInetAddress() + "已连接到服务器");
                                 JSONObject clientConnectJsonObject = new JSONObject();
                                 clientConnectJsonObject.put("event", "clientConnect");
                                 clientConnectJsonObject.put("clientInfo", clientInfoJsonObject);
@@ -74,34 +78,28 @@ public class SocketServer {
                                 session.getBasicRemote().sendText(clientConnectMsg);
                                 BufferedReader br = new BufferedReader(new InputStreamReader(finalClient.getInputStream()));
                                 while (true) {
-                                    String msg = null;
-                                    try {
-                                        msg = br.readLine();
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
+                                    int readCount;
+                                    String msg;
+                                    char[] buff = new char[1024];
+                                    readCount = br.read(buff);
+                                    if (readCount == -1) {
                                         JSONObject clientDisConnectJsonObject = new JSONObject();
                                         clientDisConnectJsonObject.put("event", "clientDisConnect");
                                         clientDisConnectJsonObject.put("clientInfo", clientInfoJsonObject);
                                         String clientDisconnectMsg = clientDisConnectJsonObject.toJSONString();
                                         session.getBasicRemote().sendText(clientDisconnectMsg);
                                         break;
+                                    } else {
+                                        msg = new String(buff, 0, readCount);
                                     }
-                                    if (msg == null) {
-                                        log.info("客户端:" + finalClient.getInetAddress() + "下线");
-                                        JSONObject clientDisConnectJsonObject = new JSONObject();
-                                        clientDisConnectJsonObject.put("event", "clientDisConnect");
-                                        clientDisConnectJsonObject.put("clientInfo", clientInfoJsonObject);
-                                        String clientDisconnectMsg = clientDisConnectJsonObject.toJSONString();
-                                        session.getBasicRemote().sendText(clientDisconnectMsg);
-                                        break;
-                                    }
-                                    log.info("收到客户端消息：" + msg);
                                     JSONObject clientMessageJsonObject = new JSONObject();
                                     clientMessageJsonObject.put("event", "clientMsg");
                                     clientMessageJsonObject.put("data", msg);
                                     clientMessageJsonObject.put("clientInfo", clientInfoJsonObject);
                                     String jsonString = clientMessageJsonObject.toJSONString();
-                                    session.getBasicRemote().sendText(jsonString);
+                                    synchronized (session) {
+                                        session.getBasicRemote().sendText(jsonString);
+                                    }
                                 }
                             }
                         }).start();
@@ -112,8 +110,10 @@ public class SocketServer {
             server.close();
             log.info("server status:" + server.isClosed());
         } else {
-            log.info("ws receive data = " + message);
-
+            HashMap<String, String> map = (HashMap<String, String>) JSON.parseObject(message, HashMap.class);
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(clientMap.get(map.get("client")).getOutputStream()));
+            bw.write(map.get("data"));
+//            bw.close();
         }
     }
 

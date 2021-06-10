@@ -21,6 +21,7 @@ public class BreakDownloadController {
 
     @GetMapping("/download/{name}")
     public void breakDownload(@PathVariable String name, HttpServletRequest request, HttpServletResponse response) {
+        log.info("请求下载文件" + name);
         String fullPath = "static/" + name;
         File downloadFile = new File(fullPath);
 
