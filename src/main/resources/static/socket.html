@@ -65,23 +65,38 @@
     </div>
     <input type="text" id="sendDataContent">
     <button id="sendDataButton" disabled>send</button>
-    <input type="file">
+    <input id="uploadFile" type="file"/>
     <button id="sendFileButton" disabled>send file</button>
     <button id="switchHex">switch to hex mode</button>
     <button id="switchAutoSend" disabled>start auto send</button>
     <input type="text" id="autoSendTime">ms
 </div>
 <script>
+    let hexToString = function (hex) {
+        let arr = hex.split("")
+        let out = ""
+        for (let i = 0; i < Math.floor(arr.length / 2); i++) {
+            let tmp = "0x" + arr[i * 2] + arr[i * 2 + 1]
+            let charValue = String.fromCharCode(tmp);
+            out += charValue
+        }
+        return out
+    };
+
+    let stringToHex = function (str) {
+        let val = "";
+        for (let i = 0; i < str.length; i++) {
+            if (val === "")
+                val = str.charCodeAt(i).toString(16);
+            else
+                val += str.charCodeAt(i).toString(16);
+        }
+        return val
+    }
     let objIsEmpty = (obj) => (JSON.stringify(obj) === '{}')
     let switchTcpServerFun = function () {
         if (!connected) {
             websocket.send("OpenTcpServer")
-            connected = true
-            switchTcpServerButton.text("CloseTcpServer")
-            serverAddressInput.attr("value", "tcp://airtest.openluat.com:2999")
-            sendDataButton.attr("disabled", false)
-            sendFileButton.attr("disabled", false)
-            switchAutoSend.attr("disabled", false)
         } else {
             clientCount = 0
             noClient = true
@@ -105,10 +120,13 @@
     let clientMap = {}
     let currentClientID = ""
     let currentClientName = ""
+    let timerID = 0
+    let serverPort = 0
     let websocket = null
     let connected = false
     let autoSend = false
     let hexMode = false
+    let uploadFile = $("#uploadFile")
     let switchTcpServerButton = $("#switchTcpServer")
     let serverAddressInput = $("#serverAddress")
     let clearWindow = $("#clearWindow")
@@ -122,14 +140,24 @@
     let clientListShowArea = $("#clientListShowArea")
     let clientCountArea = $("#clientCountArea")
     if ('WebSocket' in window) {
-        websocket = new WebSocket("ws://localhost:2900/socket");
+        websocket = new WebSocket("ws://airtest.openluat.com:2900/socket");
         websocket.onopen = function () {
-            console.log("ws 连接成功")
             switchTcpServerFun()
         }
         websocket.onmessage = function (event) {
             let webSocketEvent = JSON.parse(event.data)
-            console.log(webSocketEvent)
+            if (webSocketEvent.event === "openTcpServerPort") {
+                serverPort = webSocketEvent.port
+                if (serverPort !== 0) {
+                    connected = true
+                    switchTcpServerButton.text("CloseTcpServer")
+                    serverAddressInput.attr("value", `tcp://airtest.openluat.com:${serverPort}`)
+                    sendDataButton.attr("disabled", false)
+                    sendFileButton.attr("disabled", false)
+                    switchAutoSend.attr("disabled", false)
+                }
+                return
+            }
             let clientInfo = webSocketEvent.clientInfo.ip + ":" + webSocketEvent.clientInfo.port
             let clientInfoFormat = clientInfo.replaceAll(".", "")
             clientInfoFormat = clientInfoFormat.replace(":", "")
@@ -141,7 +169,7 @@
                     "data": webSocketEvent.data
                 })
                 if (clientMap[clientInfoFormat]["selected"] === true) {
-                    history.append(`<p>【${date}】(${clientInfo}) receive->【${webSocketEvent.data.length}btyes】${webSocketEvent.data}</p><hr>`)
+                    history.append(`<p>【${date}】(${clientInfo}) receive->【${webSocketEvent.data.length}bytes】${webSocketEvent.data}</p><hr>`)
                     let historyTmp = document.getElementById('history')
                     historyTmp.scrollTop = historyTmp.scrollHeight
                 }
@@ -189,9 +217,9 @@
                     let willShowHistory = clientMap[currentClientID]["msgList"]
                     for (let willShowMsgkey in willShowHistory) {
                         if (willShowHistory[willShowMsgkey].type === "receive") {
-                            history.append(`<p>【${willShowHistory[willShowMsgkey].time}】(${currentClientName}) receive->【${willShowHistory[willShowMsgkey].data.length}btyes】${willShowHistory[willShowMsgkey].data}</p><hr>`)
+                            history.append(`<p>【${willShowHistory[willShowMsgkey].time}】(${currentClientName}) receive->【${willShowHistory[willShowMsgkey].data.length}bytes】${willShowHistory[willShowMsgkey].data}</p><hr>`)
                         } else {
-                            history.append(`<p>【${willShowHistory[willShowMsgkey].time}】(${currentClientName}) send<-【${willShowHistory[willShowMsgkey].data.length}btyes】${willShowHistory[willShowMsgkey].data}</p><hr>`)
+                            history.append(`<p>【${willShowHistory[willShowMsgkey].time}】(${currentClientName}) <-send【${willShowHistory[willShowMsgkey].data.length}bytes】${willShowHistory[willShowMsgkey].data}</p><hr>`)
                         }
                         let historyTmp = document.getElementById('history')
                         historyTmp.scrollTop = historyTmp.scrollHeight
@@ -202,12 +230,10 @@
                     noClient = true
                 }
             } else {
-                console.log("webSocketEvent:")
-                console.log(webSocketEvent)
+                console.log("webSocket port" + webSocketEvent)
             }
         }
         websocket.onclose = function () {
-            console.log("ws 连接关闭")
             clientCount = 0
             websocket.send("CloseTcpServer")
             clientListShowArea.html("")
@@ -219,9 +245,9 @@
             switchAutoSend.attr("disabled", "")
             autoSend = false
             switchAutoSend.text("start auto send")
+            history.html("")
         }
         websocket.onerror = function () {
-            console.log("ws 连接异常")
         }
         window.onbeforeunload = function () {
 
@@ -230,25 +256,28 @@
         alert('当前浏览器不支持websocket')
     }
     clientListShowArea.on("click", "div", function () {
-        $("#clientListShowArea div").css("background-color", "white")
-        $(this).css("background-color", "yellow")
-        currentClientID = $(this).attr("id")
-        currentClientName = $(this).text()
-        history.html("")
-        for (let clientMapKey in clientMap) {
-            clientMap[clientMapKey].selected = false
-        }
-        clientMap[currentClientID]["selected"] = true
-        let willShowHistory = clientMap[currentClientID]["msgList"]
-        for (let willShowMsgkey in willShowHistory) {
-            if (willShowHistory[willShowMsgkey].type === "receive") {
-                history.append(`<p>【${willShowHistory[willShowMsgkey].time}】(${currentClientName}) receive->【${willShowHistory[willShowMsgkey].data.length}btyes】${willShowHistory[willShowMsgkey].data}</p><hr>`)
-            } else {
-                history.append(`<p>【${willShowHistory[willShowMsgkey].time}】(${currentClientName}) send<-【${willShowHistory[willShowMsgkey].data.length}btyes】${willShowHistory[willShowMsgkey].data}</p><hr>`)
+        if (!autoSend) {
+            $("#clientListShowArea div").css("background-color", "white")
+            $(this).css("background-color", "yellow")
+            currentClientID = $(this).attr("id")
+            currentClientName = $(this).text()
+            history.html("")
+            for (let clientMapKey in clientMap) {
+                clientMap[clientMapKey].selected = false
             }
-            let historyTmp = document.getElementById('history')
-            historyTmp.scrollTop = historyTmp.scrollHeight
+            clientMap[currentClientID]["selected"] = true
+            let willShowHistory = clientMap[currentClientID]["msgList"]
+            for (let willShowMsgkey in willShowHistory) {
+                if (willShowHistory[willShowMsgkey].type === "receive") {
+                    history.append(`<p>【${willShowHistory[willShowMsgkey].time}】(${currentClientName}) receive->【${willShowHistory[willShowMsgkey].data.length}bytes】${willShowHistory[willShowMsgkey].data}</p><hr>`)
+                } else {
+                    history.append(`<p>【${willShowHistory[willShowMsgkey].time}】(${currentClientName}) <-send【${willShowHistory[willShowMsgkey].data.length}bytes】${willShowHistory[willShowMsgkey].data}</p><hr>`)
+                }
+                let historyTmp = document.getElementById('history')
+                historyTmp.scrollTop = historyTmp.scrollHeight
+            }
         }
+
     })
     clearWindow.click(
         function () {
@@ -261,29 +290,67 @@
             switchTcpServerFun()
         }
     )
-    switchAutoSend.click(
-        function () {
-            if (autoSend === true) {
-                autoSend = false
-                switchAutoSend.text("start auto send")
-            } else {
-                autoSend = true
-                switchAutoSend.text("stop auto send")
-            }
-        }
-    )
+
     sendDataButton.click(
         function () {
             let value = sendDataContent.val()
             if (!noClient && value !== "") {
                 websocket.send(JSON.stringify({
+                    "isHex": hexMode.toString(),
                     "data": value,
                     "event": "serverMsg",
                     "client": currentClientName
                 }))
             }
+            let date = new Date().toLocaleString();
+            clientMap[currentClientID]["msgList"].push({
+                "isHex": hexMode.toString(),
+                "type": "send",
+                "time": date,
+                "data": value
+            })
+            if (hexMode) {
+                history.append(`<p>【${date}】(${currentClientName}) <-send hex【${value.length}bytes】0x${value}</p><hr>`)
+            } else {
+                history.append(`<p>【${date}】(${currentClientName}) <-send【${value.length}bytes】${value}</p><hr>`)
+            }
+            let historyTmp = document.getElementById('history')
+            historyTmp.scrollTop = historyTmp.scrollHeight
         }
     )
+
+    sendFileButton.click(
+        function () {
+            sendFileButton.attr("disabled", false)
+            let willUploadFile = uploadFile[0].files[0]
+            if (willUploadFile === undefined) {
+            } else {
+                let my_fr = new FileReader()
+                my_fr.readAsText(willUploadFile)
+                my_fr.onload = function () {
+                    let fileContent = my_fr.result
+                    let start = 0
+                    let size = 1024
+                    while (true) {
+                        let dataTmp = my_fr.result.substring(start, start + size)
+                        if (dataTmp === "") {
+                            sendFileButton.attr("disabled", false)
+                            break
+                        }
+                        websocket.send(JSON.stringify({
+                                "isHex": hexMode.toString(),
+                                "data": dataTmp,
+                                "event": "serverMsg",
+                                "client": currentClientName
+                            })
+                        )
+                        start += size
+                    }
+                }
+            }
+        }
+    )
+
     switchHex.click(
         function () {
             if (hexMode === true) {
@@ -292,6 +359,58 @@
             } else {
                 hexMode = true
                 switchHex.text("switch to normal mode")
+            }
+        }
+    )
+
+    switchAutoSend.click(
+        function () {
+            if (autoSend) {
+                autoSend = false
+                sendDataButton.attr("disabled", false)
+                sendFileButton.attr("disabled", false)
+                switchHex.attr("disabled", false)
+                clearInterval(timerID)
+                switchAutoSend.text("start auto send")
+            } else {
+                let loopTime = autoSendTime.val()
+                let parseLoopTime = parseInt(autoSendTime.val())
+                if (loopTime !== "" && parseLoopTime > 0 && !noClient) {
+                    sendDataButton.attr("disabled", "")
+                    sendFileButton.attr("disabled", "")
+                    switchHex.attr("disabled", "")
+                    autoSend = true
+                    switchAutoSend.text("stop auto send")
+                    timerID = setInterval(
+                        function () {
+                            let value = sendDataContent.val()
+                            if (!noClient && value !== "") {
+                                websocket.send(JSON.stringify({
+                                    "isHex": hexMode.toString(),
+                                    "data": value,
+                                    "event": "serverMsg",
+                                    "client": currentClientName
+                                }))
+                            }
+                            let date = new Date().toLocaleString();
+                            clientMap[currentClientID]["msgList"].push({
+                                "isHex": hexMode.toString(),
+                                "type": "send",
+                                "time": date,
+                                "data": value
+                            })
+                            if (hexMode) {
+                                history.append(`<p>【${date}】(${currentClientName}) <-send hex【${value.length}bytes】0x${value}</p><hr>`)
+                            } else {
+                                history.append(`<p>【${date}】(${currentClientName}) <-send【${value.length}bytes】${value}</p><hr>`)
+                            }
+                            let historyTmp = document.getElementById('history')
+                            historyTmp.scrollTop = historyTmp.scrollHeight
+                        }, parseLoopTime
+                    )
+                } else {
+                    alert("请先设置时间和发送内容")
+                }
             }
         }
     )

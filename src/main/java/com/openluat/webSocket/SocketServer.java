@@ -2,9 +2,9 @@ package com.openluat.webSocket;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import io.netty.handler.codec.json.JsonObjectDecoder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.websocket.*;
@@ -12,10 +12,11 @@ import javax.websocket.server.ServerEndpoint;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
+import java.util.Random;
+
 
 @Service
 @Slf4j
@@ -28,6 +29,7 @@ public class SocketServer {
 
     private final HashMap<String, Socket> clientMap = new HashMap<>();
 
+
     @OnOpen
     public void onOpen(Session session) {
         this.session = session;
@@ -39,20 +41,33 @@ public class SocketServer {
 
     @OnMessage
     public void onMessage(String message) throws IOException {
-
-        log.info("receive ws msg:" + message);
-
         if (message.equals("OpenTcpServer")) {
             new Thread(new Runnable() {
                 @SneakyThrows
                 @Override
                 public void run() {
-                    server = new ServerSocket(2999);
+                    for (; ; ) {
+                        int randomNum = new Random().nextInt(50);
+                        int port = randomNum + 2950;
+                        try {
+                            server = new ServerSocket(port);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            continue;
+                        }
+                        JSONObject serverPortJsonObject = new JSONObject();
+                        serverPortJsonObject.put("event", "openTcpServerPort");
+                        serverPortJsonObject.put("port", port);
+                        System.out.println("随机端口 = " + port);
+                        String serverPortMsg = serverPortJsonObject.toJSONString();
+                        session.getBasicRemote().sendText(serverPortMsg);
+                        break;
+                    }
                     while (true) {
                         Socket client;
                         try {
                             client = server.accept();
-                        } catch (IOException e) {
+                        } catch (SocketException e) {
                             e.printStackTrace();
                             for (Map.Entry<String, Socket> entry : clientMap.entrySet()) {
                                 entry.getValue().close();
@@ -65,8 +80,6 @@ public class SocketServer {
                         clientInfoJsonObject.put("ip", client.getInetAddress());
                         clientInfoJsonObject.put("port", client.getPort());
                         clientMap.put(clientIP + ":" + clientPort, client);
-                        System.out.println("clientMap = " + clientMap);
-                        Socket finalClient = client;
                         new Thread(new Runnable() {
                             @SneakyThrows
                             @Override
@@ -76,12 +89,22 @@ public class SocketServer {
                                 clientConnectJsonObject.put("clientInfo", clientInfoJsonObject);
                                 String clientConnectMsg = clientConnectJsonObject.toJSONString();
                                 session.getBasicRemote().sendText(clientConnectMsg);
-                                BufferedReader br = new BufferedReader(new InputStreamReader(finalClient.getInputStream()));
+                                BufferedReader br = new BufferedReader(new InputStreamReader(client.getInputStream()));
                                 while (true) {
-                                    int readCount;
+                                    int readCount = 0;
                                     String msg;
                                     char[] buff = new char[1024];
-                                    readCount = br.read(buff);
+                                    try {
+                                        readCount = br.read(buff);
+                                    } catch (SocketException e) {
+                                        e.printStackTrace();
+                                        JSONObject clientDisConnectJsonObject = new JSONObject();
+                                        clientDisConnectJsonObject.put("event", "clientDisConnect");
+                                        clientDisConnectJsonObject.put("clientInfo", clientInfoJsonObject);
+                                        String clientDisconnectMsg = clientDisConnectJsonObject.toJSONString();
+                                        session.getBasicRemote().sendText(clientDisconnectMsg);
+                                        break;
+                                    }
                                     if (readCount == -1) {
                                         JSONObject clientDisConnectJsonObject = new JSONObject();
                                         clientDisConnectJsonObject.put("event", "clientDisConnect");
@@ -89,8 +112,10 @@ public class SocketServer {
                                         String clientDisconnectMsg = clientDisConnectJsonObject.toJSONString();
                                         session.getBasicRemote().sendText(clientDisconnectMsg);
                                         break;
-                                    } else {
+                                    } else if (readCount > 0) {
                                         msg = new String(buff, 0, readCount);
+                                    } else {
+                                        continue;
                                     }
                                     JSONObject clientMessageJsonObject = new JSONObject();
                                     clientMessageJsonObject.put("event", "clientMsg");
@@ -108,13 +133,56 @@ public class SocketServer {
             }).start();
         } else if (message.equals("CloseTcpServer")) {
             server.close();
-            log.info("server status:" + server.isClosed());
         } else {
             HashMap<String, String> map = (HashMap<String, String>) JSON.parseObject(message, HashMap.class);
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(clientMap.get(map.get("client")).getOutputStream()));
-            bw.write(map.get("data"));
-//            bw.close();
+            String data = map.get("data");
+            String isHex = map.get("isHex");
+            if (isHex.equals("true")) {
+                OutputStream outputStream = clientMap.get(map.get("client")).getOutputStream();
+                outputStream.write(hexToByteArray(data));
+                outputStream.flush();
+            } else {
+                BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(clientMap.get(map.get("client")).getOutputStream()));
+                bufferedWriter.write(data);
+                bufferedWriter.flush();
+            }
         }
+    }
+
+    public static byte hexToByte(String inHex) {
+        return (byte) Integer.parseInt(inHex, 16);
+    }
+
+    public static byte[] hexToByteArray(String inHex) {
+        int hexlen = inHex.length();
+        byte[] result;
+        if (hexlen % 2 == 1) {
+            // 奇数
+            hexlen++;
+            result = new byte[(hexlen / 2)];
+            inHex = "0" + inHex;
+        } else {
+            // 偶数
+            result = new byte[(hexlen / 2)];
+        }
+        int j = 0;
+        for (int i = 0; i < hexlen; i += 2) {
+            result[j] = hexToByte(inHex.substring(i, i + 2));
+            j++;
+        }
+        return result;
+    }
+
+    public static String bytesToHexString(byte[] bArray) {
+        StringBuilder sb = new StringBuilder(bArray.length);
+        String sTemp;
+        for (byte b : bArray) {
+            sTemp = Integer.toHexString(0xFF & b);
+            if (sTemp.length() < 2)
+                sb.append(0);
+            sb.append(sTemp.toUpperCase());
+        }
+        return sb.toString();
     }
 
     @OnError
