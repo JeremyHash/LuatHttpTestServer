@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 
 @RestController
@@ -30,6 +31,12 @@ public class GetController {
     public ResponseEntity<String> waitTest() throws InterruptedException {
         Thread.sleep(15000);
         return new ResponseEntity<>("waitTestSuccess", HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/getIP")
+    public ResponseEntity<String> getIP(HttpServletRequest request) {
+        String remoteAddr = request.getRemoteAddr();
+        return new ResponseEntity<>(remoteAddr, HttpStatus.OK);
     }
 
     @GetMapping(path = "/redirect301")
