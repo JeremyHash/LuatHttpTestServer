@@ -55,6 +55,7 @@
     <input id="serverAddress" disabled/>
     <button id="clearWindow">clearWindow</button>
     <span id="clientCountArea">current client count:0</span>
+    <button id="saveCurrentLog">saveCurrentLog</button>
     <div id="main">
         <div>
             <div id="history"></div>
@@ -130,6 +131,7 @@
     let switchTcpServerButton = $("#switchTcpServer")
     let serverAddressInput = $("#serverAddress")
     let clearWindow = $("#clearWindow")
+    let saveCurrentLog = $("#saveCurrentLog")
     let history = $("#history")
     let sendDataContent = $("#sendDataContent")
     let sendDataButton = $("#sendDataButton")
@@ -194,6 +196,9 @@
                 }
             } else if (webSocketEvent.event === "clientDisConnect") {
                 clientCount--
+                if (clientCount < 0) {
+                    clientCount = 0
+                }
                 clientCountArea.text(`current client count:${clientCount}`)
                 let children = clientListShowArea.children()
                 for (let i = 0; i < children.length; i++) {
@@ -224,6 +229,9 @@
                         let historyTmp = document.getElementById('history')
                         historyTmp.scrollTop = historyTmp.scrollHeight
                     }
+                } else {
+                    currentClientName = ""
+                    currentClientID = ""
                 }
                 delete clientMap[clientInfoFormat]
                 if (objIsEmpty(clientMap)) {
@@ -288,6 +296,22 @@
     switchTcpServerButton.click(
         function () {
             switchTcpServerFun()
+        }
+    )
+    saveCurrentLog.click(
+        function () {
+            if (currentClientName === "") {
+                alert("当前没有可保存的日志")
+            } else {
+                window.open()
+                var $a = document.createElement('a');
+                $a.setAttribute("href", "http://airtest.openluat.com:2900/download/" + currentClientName.replace(":", "_") + ".txt");
+                $a.setAttribute("download", "");
+
+                var evObj = document.createEvent('MouseEvents');
+                evObj.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, true, false, 0, null);
+                $a.dispatchEvent(evObj);
+            }
         }
     )
 

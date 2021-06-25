@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.websocket.*;
@@ -13,6 +12,8 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -28,7 +29,7 @@ public class SocketServer {
     private ServerSocket server;
 
     private final HashMap<String, Socket> clientMap = new HashMap<>();
-
+    private final HashMap<String, BufferedWriter> clientLogWriterMap = new HashMap<>();
 
     @OnOpen
     public void onOpen(Session session) {
@@ -58,7 +59,6 @@ public class SocketServer {
                         JSONObject serverPortJsonObject = new JSONObject();
                         serverPortJsonObject.put("event", "openTcpServerPort");
                         serverPortJsonObject.put("port", port);
-                        System.out.println("随机端口 = " + port);
                         String serverPortMsg = serverPortJsonObject.toJSONString();
                         session.getBasicRemote().sendText(serverPortMsg);
                         break;
@@ -80,6 +80,9 @@ public class SocketServer {
                         clientInfoJsonObject.put("ip", client.getInetAddress());
                         clientInfoJsonObject.put("port", client.getPort());
                         clientMap.put(clientIP + ":" + clientPort, client);
+                        File file = new File("static/" + clientIP + "_" + clientPort + ".txt");
+                        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file, true));
+                        clientLogWriterMap.put(clientIP + ":" + clientPort, bufferedWriter);
                         new Thread(new Runnable() {
                             @SneakyThrows
                             @Override
@@ -103,6 +106,8 @@ public class SocketServer {
                                         clientDisConnectJsonObject.put("clientInfo", clientInfoJsonObject);
                                         String clientDisconnectMsg = clientDisConnectJsonObject.toJSONString();
                                         session.getBasicRemote().sendText(clientDisconnectMsg);
+                                        clientLogWriterMap.get(clientIP + ":" + clientPort).close();
+                                        file.delete();
                                         break;
                                     }
                                     if (readCount == -1) {
@@ -111,6 +116,8 @@ public class SocketServer {
                                         clientDisConnectJsonObject.put("clientInfo", clientInfoJsonObject);
                                         String clientDisconnectMsg = clientDisConnectJsonObject.toJSONString();
                                         session.getBasicRemote().sendText(clientDisconnectMsg);
+                                        clientLogWriterMap.get(clientIP + ":" + clientPort).close();
+                                        file.delete();
                                         break;
                                     } else if (readCount > 0) {
                                         msg = new String(buff, 0, readCount);
@@ -125,6 +132,10 @@ public class SocketServer {
                                     synchronized (session) {
                                         session.getBasicRemote().sendText(jsonString);
                                     }
+                                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                                    String formatDate = dateFormat.format(new Date());
+                                    bufferedWriter.write(formatDate + " client:" + msg + "\n");
+                                    bufferedWriter.flush();
                                 }
                             }
                         }).start();
@@ -146,6 +157,11 @@ public class SocketServer {
                 bufferedWriter.write(data);
                 bufferedWriter.flush();
             }
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String formatDate = dateFormat.format(new Date());
+            BufferedWriter bufferedWriter = clientLogWriterMap.get(map.get("client"));
+            bufferedWriter.write(formatDate + " server:" + data + "\n");
+            bufferedWriter.flush();
         }
     }
 
