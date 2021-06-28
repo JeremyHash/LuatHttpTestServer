@@ -142,7 +142,7 @@
     let clientListShowArea = $("#clientListShowArea")
     let clientCountArea = $("#clientCountArea")
     if ('WebSocket' in window) {
-        websocket = new WebSocket("ws://localhost:2900/socket");
+        websocket = new WebSocket("ws://airtest.openluat.com:2900/socket");
         websocket.onopen = function () {
             switchTcpServerFun()
             clientCount = 0
@@ -154,7 +154,7 @@
                 if (serverPort !== 0) {
                     connected = true
                     switchTcpServerButton.text("CloseTcpServer")
-                    serverAddressInput.attr("value", `tcp://localhost:${serverPort}`)
+                    serverAddressInput.attr("value", `tcp://airtest.openluat.com:${serverPort}`)
                     sendDataButton.attr("disabled", false)
                     sendFileButton.attr("disabled", false)
                     switchAutoSend.attr("disabled", false)
@@ -303,7 +303,7 @@
     saveCurrentServerLog.click(
         function () {
             let $a = document.createElement('a');
-            $a.setAttribute("href", "http://localhost:2900/download/" + serverPort + ".txt");
+            $a.setAttribute("href", "http://airtest.openluat.com:2900/download/" + serverPort + ".txt");
             $a.setAttribute("download", "");
 
             let evObj = document.createEvent('MouseEvents');
