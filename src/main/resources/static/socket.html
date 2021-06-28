@@ -302,17 +302,13 @@
     )
     saveCurrentServerLog.click(
         function () {
-            if (currentClientName === "") {
-                alert("当前没有可保存的日志")
-            } else {
-                var $a = document.createElement('a');
-                $a.setAttribute("href", "http://localhost:2900/download/" + serverPort + ".txt");
-                $a.setAttribute("download", "");
+            let $a = document.createElement('a');
+            $a.setAttribute("href", "http://localhost:2900/download/" + serverPort + ".txt");
+            $a.setAttribute("download", "");
 
-                var evObj = document.createEvent('MouseEvents');
-                evObj.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, true, false, 0, null);
-                $a.dispatchEvent(evObj);
-            }
+            let evObj = document.createEvent('MouseEvents');
+            evObj.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, true, false, 0, null);
+            $a.dispatchEvent(evObj);
         }
     )
 

@@ -25,6 +25,10 @@ public class BreakDownloadController {
         String fullPath = "static/" + name;
         File downloadFile = new File(fullPath);
 
+        if (!downloadFile.exists()) {
+            return;
+        }
+
         String md5 = utils.getMD5(downloadFile);
 
         if (!downloadFile.exists()) {
