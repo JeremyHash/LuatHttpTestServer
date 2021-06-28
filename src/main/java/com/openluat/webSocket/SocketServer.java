@@ -144,7 +144,7 @@ public class SocketServer {
                                     synchronized (session) {
                                         session.getBasicRemote().sendText(jsonString);
                                     }
-                                    serverLogWriterMap.get(serverPort).write(getCurrentTime() + "-" + clientIP + ":" + clientPort + "-client:" + msg + "\n");
+                                    serverLogWriterMap.get(serverPort).write(getCurrentTime() + "-" + clientIP + ":" + clientPort + "-client: " + msg + "\n");
                                     serverLogWriterMap.get(serverPort).flush();
                                 }
                             }
@@ -167,7 +167,7 @@ public class SocketServer {
                 bufferedWriter.write(data);
                 bufferedWriter.flush();
             }
-            serverLogWriterMap.get(serverPort).write(getCurrentTime() + "-" + map.get("client") + "-client: connect\n");
+            serverLogWriterMap.get(serverPort).write(getCurrentTime() + "-" + map.get("client") + "-server: " + data + "\n");
             serverLogWriterMap.get(serverPort).flush();
         }
     }
