@@ -28,8 +28,15 @@ public class SocketServer {
 
     private ServerSocket server;
 
+    private int serverPort;
+
     private final HashMap<String, Socket> clientMap = new HashMap<>();
-    private final HashMap<String, BufferedWriter> clientLogWriterMap = new HashMap<>();
+    private final HashMap<Integer, BufferedWriter> serverLogWriterMap = new HashMap<>();
+
+    public String getCurrentTime() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return dateFormat.format(new Date());
+    }
 
     @OnOpen
     public void onOpen(Session session) {
@@ -49,16 +56,22 @@ public class SocketServer {
                 public void run() {
                     for (; ; ) {
                         int randomNum = new Random().nextInt(50);
-                        int port = randomNum + 2950;
+                        serverPort = randomNum + 2950;
                         try {
-                            server = new ServerSocket(port);
+                            server = new ServerSocket(serverPort);
+                            File file = new File("static/" + serverPort + ".txt");
+                            if (file.exists()) {
+                                file.delete();
+                            }
+                            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file, true));
+                            serverLogWriterMap.put(serverPort, bufferedWriter);
                         } catch (Exception e) {
                             e.printStackTrace();
                             continue;
                         }
                         JSONObject serverPortJsonObject = new JSONObject();
                         serverPortJsonObject.put("event", "openTcpServerPort");
-                        serverPortJsonObject.put("port", port);
+                        serverPortJsonObject.put("port", serverPort);
                         String serverPortMsg = serverPortJsonObject.toJSONString();
                         session.getBasicRemote().sendText(serverPortMsg);
                         break;
@@ -80,9 +93,6 @@ public class SocketServer {
                         clientInfoJsonObject.put("ip", client.getInetAddress());
                         clientInfoJsonObject.put("port", client.getPort());
                         clientMap.put(clientIP + ":" + clientPort, client);
-                        File file = new File("static/" + clientIP + "_" + clientPort + ".txt");
-                        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file, true));
-                        clientLogWriterMap.put(clientIP + ":" + clientPort, bufferedWriter);
                         new Thread(new Runnable() {
                             @SneakyThrows
                             @Override
@@ -92,6 +102,8 @@ public class SocketServer {
                                 clientConnectJsonObject.put("clientInfo", clientInfoJsonObject);
                                 String clientConnectMsg = clientConnectJsonObject.toJSONString();
                                 session.getBasicRemote().sendText(clientConnectMsg);
+                                serverLogWriterMap.get(serverPort).write(getCurrentTime() + "-" + clientIP + ":" + clientPort + "-client: connect\n");
+                                serverLogWriterMap.get(serverPort).flush();
                                 BufferedReader br = new BufferedReader(new InputStreamReader(client.getInputStream()));
                                 while (true) {
                                     int readCount = 0;
@@ -106,8 +118,8 @@ public class SocketServer {
                                         clientDisConnectJsonObject.put("clientInfo", clientInfoJsonObject);
                                         String clientDisconnectMsg = clientDisConnectJsonObject.toJSONString();
                                         session.getBasicRemote().sendText(clientDisconnectMsg);
-                                        clientLogWriterMap.get(clientIP + ":" + clientPort).close();
-                                        file.delete();
+                                        serverLogWriterMap.get(serverPort).write(getCurrentTime() + "-" + clientIP + ":" + clientPort + "-client: disconnect\n");
+                                        serverLogWriterMap.get(serverPort).flush();
                                         break;
                                     }
                                     if (readCount == -1) {
@@ -116,8 +128,8 @@ public class SocketServer {
                                         clientDisConnectJsonObject.put("clientInfo", clientInfoJsonObject);
                                         String clientDisconnectMsg = clientDisConnectJsonObject.toJSONString();
                                         session.getBasicRemote().sendText(clientDisconnectMsg);
-                                        clientLogWriterMap.get(clientIP + ":" + clientPort).close();
-                                        file.delete();
+                                        serverLogWriterMap.get(serverPort).write(getCurrentTime() + "-" + clientIP + ":" + clientPort + "-client: disconnect\n");
+                                        serverLogWriterMap.get(serverPort).flush();
                                         break;
                                     } else if (readCount > 0) {
                                         msg = new String(buff, 0, readCount);
@@ -132,10 +144,8 @@ public class SocketServer {
                                     synchronized (session) {
                                         session.getBasicRemote().sendText(jsonString);
                                     }
-                                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                                    String formatDate = dateFormat.format(new Date());
-                                    bufferedWriter.write(formatDate + " client:" + msg + "\n");
-                                    bufferedWriter.flush();
+                                    serverLogWriterMap.get(serverPort).write(getCurrentTime() + "-" + clientIP + ":" + clientPort + "-client:" + msg + "\n");
+                                    serverLogWriterMap.get(serverPort).flush();
                                 }
                             }
                         }).start();
@@ -157,11 +167,8 @@ public class SocketServer {
                 bufferedWriter.write(data);
                 bufferedWriter.flush();
             }
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String formatDate = dateFormat.format(new Date());
-            BufferedWriter bufferedWriter = clientLogWriterMap.get(map.get("client"));
-            bufferedWriter.write(formatDate + " server:" + data + "\n");
-            bufferedWriter.flush();
+            serverLogWriterMap.get(serverPort).write(getCurrentTime() + "-" + map.get("client") + "-client: connect\n");
+            serverLogWriterMap.get(serverPort).flush();
         }
     }
 

@@ -55,7 +55,7 @@
     <input id="serverAddress" disabled/>
     <button id="clearWindow">clearWindow</button>
     <span id="clientCountArea">current client count:0</span>
-    <button id="saveCurrentLog">saveCurrentLog</button>
+    <button id="saveCurrentServerLog">saveCurrentServerLog</button>
     <div id="main">
         <div>
             <div id="history"></div>
@@ -131,7 +131,7 @@
     let switchTcpServerButton = $("#switchTcpServer")
     let serverAddressInput = $("#serverAddress")
     let clearWindow = $("#clearWindow")
-    let saveCurrentLog = $("#saveCurrentLog")
+    let saveCurrentServerLog = $("#saveCurrentServerLog")
     let history = $("#history")
     let sendDataContent = $("#sendDataContent")
     let sendDataButton = $("#sendDataButton")
@@ -298,14 +298,13 @@
             switchTcpServerFun()
         }
     )
-    saveCurrentLog.click(
+    saveCurrentServerLog.click(
         function () {
             if (currentClientName === "") {
                 alert("当前没有可保存的日志")
             } else {
-                window.open()
                 var $a = document.createElement('a');
-                $a.setAttribute("href", "http://airtest.openluat.com:2900/download/" + currentClientName.replace(":", "_") + ".txt");
+                $a.setAttribute("href", "http://airtest.openluat.com:2900/download/" + serverPort + ".txt");
                 $a.setAttribute("download", "");
 
                 var evObj = document.createEvent('MouseEvents');
