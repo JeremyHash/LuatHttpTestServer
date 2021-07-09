@@ -94,8 +94,8 @@ public class PostController {
         jsonObject.put("lat", lbsLocInfo.getLat());
         jsonObject.put("lng", lbsLocInfo.getLng());
         jsonObject.put("timestamp", lbsLocInfo.getTimestamp());
-        redisTemplate.opsForValue().set("GPSLocInfo", jsonObject.toJSONString());
-        return ResponseEntity.ok("postGPSLocInfo OK!");
+        redisTemplate.opsForList().rightPush("GPSLocInfoList", jsonObject.toJSONString());
+        return ResponseEntity.ok("postGPSLocInfo OK");
     }
 
     @PostMapping(path = "/postCellLocInfo")
@@ -105,7 +105,7 @@ public class PostController {
         jsonObject.put("lng", lbsLocInfo.getLng());
         jsonObject.put("timestamp", lbsLocInfo.getTimestamp());
         redisTemplate.opsForValue().set("CellLocInfo", jsonObject.toJSONString());
-        return ResponseEntity.ok("postCellLocInfo OK!");
+        return ResponseEntity.ok("postCellLocInfo OK");
     }
 
 
@@ -116,7 +116,7 @@ public class PostController {
         jsonObject.put("lng", lbsLocInfo.getLng());
         jsonObject.put("timestamp", lbsLocInfo.getTimestamp());
         redisTemplate.opsForValue().set("WiFiLocInfo", jsonObject.toJSONString());
-        return ResponseEntity.ok("postWiFiLocInfo OK!");
+        return ResponseEntity.ok("postWiFiLocInfo OK");
     }
 
 }

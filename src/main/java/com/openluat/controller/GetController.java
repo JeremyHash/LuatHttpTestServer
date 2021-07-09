@@ -1,6 +1,8 @@
 package com.openluat.controller;
 
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
@@ -10,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @RestController
 public class GetController {
@@ -97,14 +101,20 @@ public class GetController {
         }
     }
 
-    @GetMapping(path = "/getGPSLocInfo")
-    public ResponseEntity<String> getGPSLocInfo() {
-        String gpsLocInfo = redisTemplate.opsForValue().get("GPSLocInfo");
-        if (gpsLocInfo == null) {
-            return ResponseEntity.notFound().build();
+    @GetMapping(path = "/getGPSLocInfoList")
+    public ResponseEntity<List> getGPSLocInfo() {
+        List<String> gpsLocInfoList = redisTemplate.opsForList().range("GPSLocInfoList", 0, -1);
+        if (gpsLocInfoList != null) {
+            return ResponseEntity.ok(gpsLocInfoList);
         } else {
-            return ResponseEntity.ok(gpsLocInfo);
+            return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping(path = "/clearGPSHistory")
+    public ResponseEntity<String> clearGPSHistory() {
+        redisTemplate.delete("GPSLocInfoList");
+        return ResponseEntity.ok("delete ok");
     }
 
 }
